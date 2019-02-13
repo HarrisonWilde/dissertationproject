@@ -1,0 +1,122 @@
+---
+title: "Composing Ambient Soundscapes Using Visual and Auditory Data"
+subtitle: "CS350 Project Specification"
+author: "Harrison Wilde (u1600779)"
+date: "12th October 2018"
+header-includes:
+  - \usepackage{url}
+  - \usepackage{float}
+  - \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+bibliography: specification.bib
+link-citations: yes
+csl: ieee.csl
+urlcolor: blue
+---
+
+\pagebreak
+
+# Problem Statement
+
+Compression is a process which applies a series of algorithms and sacrifices usually for the 
+
+Compression is a concept and area of consistent growth, especially since the dawn of the internet where data transfer and - in recent years - streaming is pivotal to its use. It applies to files of all formats which must be transferred or archived to allow for thousands of songs to be stored on media players and for large attachments to be sent quickly via email. All of this is not without drawbacks however, and the main problem discussed here is that of audio compression, where detail and clarity is sacrificed in favour of smaller file sizes.
+
+The aim is to apply pattern recognition and machine learning techniques to effectively *de*compress audio into a state where it is closer to the original form than its compressed form, or at least could be said to sound clearer or more dynamic. This clearly has a quantitative and qualitative aspect and both will be examined in detail through various means of evaluation.
+
+*Having some difficulty regarding the impact of such a project, though I believe my idea is reasonably unique and challenging.*
+
+Modelling musical composition is a largely mathematical endeavour at its core; one which people have been grappling with for centuries. With the onset of more complex pattern learning and generating approaches, it is becoming increasingly feasible for a computer to produce seemingly novel and creative artistic output. This project will focus on combining research into techniques of computational composition with parameters set from processing visual input, applying machine learning techniques at either end of the process. Namely, an image will be analysed to provide tuning parameters to a composition algorithm which will then output music in order to construct a soundscape matching the atmosphere of the supplied image.
+
+There are numerous hurdles to overcome when building a system like this and it can thankfully be broken down into some smaller components:
+
++ The composition of music is the initial focus of this project as it is presumed to eventually become the largest and most involved component.
++ There will also be the challenge of processing images to provide parameters for the resulting composition engine.
++ Allowing these processes to interact may require the creation of new models and thus the discovery of appropriate datasets with which to train them.
+
+As mentioned in the [Current Literature](#current-literature) section, some work in this area exists but the outcome of this project should be something novel and interesting especially with regards to the research which will take place as objectives are completed. It is a challenging set of problems, each of which could be expanded upon or perhaps constricted (using off the shelf or pre-existing similar methodologies) to maintain a flexible approach to the project as it progresses, and perhaps allow it to continue in the case of some impassable issue being reached.
+
+# Objectives
+
+*I think I would like to break this section down even more perhaps, it is hard to include technical details at this stage which could be making it hard to break down.*
+
+The main objective of this project is to produce a meaningful musical output, which is as verifiably "human" in the nature of its composition as possible. This description is perhaps too qualitative and requires breaking down further, the primary initial objectives are certainly focussed on the research and the eventual comparison of different techniques for achieving the goal mentioned above. A system must then be built and tuned to ensure the goal is reached in a desirable way. Finally, the project's culmination must be evaluated as rigorously as possible.
+
+## Composition
+
+1. A means of encoding music into a format acceptable for training a model or agent must be developed, likely using a sizeable training set of data (appropriate data sets are to be found as part of the research portion of the schedule); there are currently two approaches which will be considered and compared:
+	a. Using MIDI or sheet music data, either from a raw source or through the use of some note / chord detection software, this is the more quantifiable approach and likely allows for the most flexibility in **2.2.2**.
+	b. Using signal / waveform data to train a CNN is a more abstract (perhaps) approach but has been done before (reference).
+
+2. The actual composition of music could then be carried out in one of two ways which will be considered and the research behind this recorded to allow for comparisons and conclusions to be drawn:
+	a. Markov chains could be used as Iannis Xenakis explores in Formalized Music [@nla.cat-vn250479], constructing sequences of notes based upon common progressions and harmonious chords, found via the analysis of large datasets of music as eluded to in **2.1.1**.
+	b. CNNs as mentioned in **2.1.2b** and the use of Google Brain's Magenta [@magenta] show promise, as Magenta has a proven track record in the areas of music composition once an appropriate model is chosen.
+
+## Output
+
+1. The music could be outputted via the generation of MIDI which is then played by an instrument.
+2. Or as signals from a CNN again, this depends on decisions made in **2.1**.
+
+## Image Processing
+
+1. A means of determining a subset of characteristics of an image should be developed which can then inform the aforementioned composition engine at runtime. For example, the time of day / light levels present in an image may infer a mood to be considered when the engine composes a piece to match it, through influencing the choice of a major or minor key etc. *If time becomes a significant constraint this whole part of the project could perhaps be moved out of focus and thus could be considered to be a stretch objective*.
+
+## Extensions
+
+1. A web app to allow for people to test out the project would be a welcome extension if time allows.
+2. The complexity of music outputted is at this stage uncertain and thus this could be explored in greater depth given the resources.
+
+# Methodology
+
+## Research
+
+Research should be documented as fully as possible, whether that be in the progress report due at the end of Term 1 or through amendments to this specification document. The decision making process will be justified throughout the project and comparative arguments provided where appropriate.
+
+## Development
+
+A fairly agile approach will be taken to the software development component of this project, replacing the client in the traditional agile manifesto with the project's supervisor. Version control etc. should be employed to keep track of progress with development and ensure the project is reproducible and accessible to stakeholders.
+
+## Evaluation
+
+If the output of the composition engine is in an acceptable format rather than actual sound waves, it should be possible to apply knowledge of musical theory to evaluate whether the output follows musical standards of tonality and key.
+
+Using a blind study on test subjects asking for their opinions of the composed pieces could offer some qualitative substance to the output.
+
+*I would like to think and discuss this area a little more as I am still unsure on what other evaluation methodologies might work well.*
+
+# Schedule
+
+Alongside work on the project there will be meetings with the project's supervisor roughly once per week during term times. This schedule is presented by way of a Gantt chart and illustrates the division of time between objectives towards eventual projection completion.
+
+![Gantt Chart](gantt.png)
+
+# Resources
+
+## Technologies and Packages *WIP*
+
+- Python
+	- TensorFlow Magenta
+	- Keras
+	- Scikit-learn
+	- Pandas
+
+## Current Literature
+
+A somewhat similar project called Imaginary Soundscape [@imaginarysoundscape; @kajiharaimaginary] can be seen to exist upon some preliminary research of the area, this project focusses on matching a database of background noise with the content of an image. They use a multimodal approach and also integrated their work with the use of Google Maps to predict the most likely background noise for any location on street view.
+
+SoundNet [@aytar2016soundnet] is also of interest in that it is essentially attempting part of this project's remit in reverse; predicting characteristics of the environment using sound from a video feed.
+
+Google Brain's Magenta is built upon the prominent TensorFlow library and has made significant waves in this area of research over the past few years.
+
+# Ethical Considerations
+
+*Not sure if there is anything else to mention here*
+
+There are some potential considerations regarding the gathering of data via survey for evaluation of the project. The majority of components of the finished project should be open source or built from scratch; where this is not the case the appropriate licensing and terms of use must be considered.
+
+*Do I need to reference everything, i.e. TensorFlow, Google Maps, stuff like that or just keep it to things a reader may not be aware of?*
+
+# References
