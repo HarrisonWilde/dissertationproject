@@ -1,42 +1,57 @@
-import os, numpy, conversion, data, training, model, cPickle
+import argparse
+import tensorflow as tf
 
-# SORT OUT THIS TO GET RID OF DEPENDENCY ON PCS
+from datetime import datetime
+from train import train
+from generate import generate, write_file
+from model import build
 
-# def gen_adaptive(m,pcs,times,keep_thoughts=False,name="final"):
-# 	xIpt, xOpt = map(lambda x: numpy.array(x, dtype='int8'), multi_training.getPieceSegment(pcs))
-# 	all_outputs = [xOpt[0]]
-# 	if keep_thoughts:
-# 		all_thoughts = []
-# 	m.start_slow_walk(xIpt[0])
-# 	cons = 1
-# 	for time in range(multi_training.batch_len*times):
-# 		resdata = m.slow_walk_fun( cons )
-# 		nnotes = numpy.sum(resdata[-1][:,0])
-# 		if nnotes < 2:
-# 			if cons > 1:
-# 				cons = 1
-# 			cons -= 0.02
-# 		else:
-# 			cons += (1 - cons)*0.3
-# 		all_outputs.append(resdata[-1])
-# 		if keep_thoughts:
-# 			all_thoughts.append(resdata)
-# 	noteStateMatrixToMidi(numpy.array(all_outputs),'output/'+name)
-# 	if keep_thoughts:
-# 		pickle.dump(all_thoughts, open('output/'+name+'.p','wb'))
+# os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
 
-# def fetch_train_thoughts(m,pcs,batches,name="trainthoughts"):
-# 	all_thoughts = []
-# 	for i in range(batches):
-# 		ipt, opt = multi_training.getPieceBatch(pcs)
-# 		thoughts = m.update_thought_fun(ipt,opt)
-# 		all_thoughts.append((ipt,opt,thoughts))
-# 	pickle.dump(all_thoughts, open('output/'+name+'.p','wb'))
+def main():
+
+    p = argparse.ArgumentParser(description='WildeNet compositional engine')
+    p.add_argument('-tl', '--time_layers', default=[256,256], type=int, nargs='+', 
+        help='List of LSTM layer sizes for the time model, in the format x y z ...')
+    p.add_argument('-hl', '--harm_layers', default=[128,64], type=int, nargs='+', 
+        help='List of LSTM layer sizes for the time model, in the format x y z ...')
+    p.add_argument('-t', '--train', action='store_true',
+        help='Flag to train model, this occurs by default and is included for completeness')
+    p.add_argument('-p', '--path', default='data', type=str, 
+        help='Path to MIDI files for use in training the compositional engine DEFAULT IS ./data')
+    p.add_argument('-bs', '--batch_size', default=10, type=int, 
+        help='Training batch size to feed into the models DEFAULT IS 10')
+    p.add_argument('-b', '--bars', default=8, type=int, 
+        help='Number of bars per batch of training data, this flag is for training a model, does not effect composition length DEFAULT IS 8')
+    p.add_argument('-bpb', '--beats_per_bar', default=4, type=int, 
+        help='Number of beats per training bar DEFAULT IS 4')
+    p.add_argument('-npb', '--notes_per_beat', default=4, type=int, 
+        help='Number of notes per training beat DEFAULT IS 4')
+    p.add_argument('-g', '--generate', action='store_true',
+        help='Flag to use the generative model to compose a piece')
+    p.add_argument('-n', '--name', default='output ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S"), type=str,
+        help='Name for resulting composition DEFAULT IS "output <timestamp>"')
+    p.add_argument('-nb', '--num_bars', default=64, type=int, 
+        help='Number of bars of music to generate when -g flag is set, the length of the resulting composition depends on this argument DEFAULT IS 64')
+    p.add_argument('-nc', '--no_cache', action='store_true',
+        help='Add this flag to not attempt to use any previously trained model files etc.')
+    args = p.parse_args()
+
+    notes_per_bar = args.notes_per_beat * args.beats_per_bar
+    models = build(args.time_layers, args.harm_layers, notes_per_bar * args.bars, notes_per_bar)
+    
+    if not args.no_cache:
+        try:
+            models[0].load_weights(MODEL_FILE)
+            print('Loaded model from file.')
+        except:
+            print('Unable to load model from file.')
+    
+    if args.generate:
+        write_file(args.name, generate(models, args.num_bars))
+    else:
+        models[0].summary()
+        train(models, args.path, args.batch_size, notes_per_bar, args.bars)
 
 if __name__ == '__main__':
-
-	m = model.Model([300,300],[100,50], dropout=0.5)
-
-	training.train(m, "../Midi", 10000, "Midi")
-
-	cPickle.dump( m.learned_config, open( "output/final_learned_config.p", "wb" ) )
+    main()

@@ -1,404 +1,155 @@
-import theano, theano.tensor as T
-import numpy as np
-import theano_lstm
+import numpy as np, tensorflow as tf
+from keras.layers import Input, CuDNNLSTM, LSTM, Dense, Dropout, Lambda, Reshape, Permute
+from keras.layers import TimeDistributed, RepeatVector, Conv1D, Activation
+from keras.layers import Embedding, Flatten
+from keras.layers.merge import Concatenate, Add
+from keras.models import Model
+import keras.backend as K
+from keras import losses
 
-from out_to_in_op import OutputFormToInputFormOp
+from util import *
+from constants import *
 
-from theano_lstm import Embedding, LSTM, RNN, StackedCells, Layer, create_optimization_updates, masked_loss, MultiDropout
+# Note any use of the number 12 is significant in that it is the number of notes in a standard octave.
 
+def primary_loss(y_true, y_pred):
+    # 3 separate loss calculations based on if note is played or not
+    played = y_true[:, :, :, 0]
+    bce_note = losses.binary_crossentropy(y_true[:, :, :, 0], y_pred[:, :, :, 0])
+    bce_replay = losses.binary_crossentropy(y_true[:, :, :, 1], tf.multiply(played, y_pred[:, :, :, 1]) + tf.multiply(1 - played, y_true[:, :, :, 1]))
+    mse = losses.mean_squared_error(y_true[:, :, :, 2], tf.multiply(played, y_pred[:, :, :, 2]) + tf.multiply(1 - played, y_true[:, :, :, 2]))
+    return bce_note + bce_replay + mse
 
-def has_hidden(layer):
+def pitch_pos_in_f(time_steps):
     """
-    Whether a layer has a trainable
-    initial hidden state.
+    Returns a constant containing pitch position of each note
     """
-    return hasattr(layer, 'initial_hidden_state')
+    def f(x):
+        note_ranges = tf.range(NUM_NOTES, dtype='float32') / NUM_NOTES
+        repeated_ranges = tf.tile(note_ranges, [tf.shape(x)[0] * time_steps])
+        return tf.reshape(repeated_ranges, [tf.shape(x)[0], time_steps, NUM_NOTES, 1])
+    return f
 
-def matrixify(vector, n):
-    # Cast n to int32 if necessary to prevent error on 32 bit systems
-    return T.repeat(T.shape_padleft(vector),
-                    n if (theano.configdefaults.local_bitwidth() == 64) else T.cast(n,'int32'),
-                    axis=0)
-
-def initial_state(layer, dimensions = None):
+def pitch_class_in_f(time_steps):
     """
-    Initalizes the recurrence relation with an initial hidden state
-    if needed, else replaces with a "None" to tell Theano that
-    the network **will** return something, but it does not need
-    to send it to the next step of the recurrence
+    Returns a constant containing pitch class of each note
     """
-    if dimensions is None:
-        return layer.initial_hidden_state if has_hidden(layer) else None
-    else:
-        return matrixify(layer.initial_hidden_state, dimensions) if has_hidden(layer) else None
+    def f(x):
+        pitch_class_matrix = np.array([one_hot(n % 12, 12) for n in range(NUM_NOTES)])
+        pitch_class_matrix = tf.constant(pitch_class_matrix, dtype='float32')
+        pitch_class_matrix = tf.reshape(pitch_class_matrix, [1, 1, NUM_NOTES, 12])
+        return tf.tile(pitch_class_matrix, [tf.shape(x)[0], time_steps, 1, 1])
+    return f
 
-def initial_state_with_taps(layer, dimensions = None):
-    """Optionally wrap tensor variable into a dict with taps=[-1]"""
-    state = initial_state(layer, dimensions)
-    if state is not None:
-        return dict(initial=state, taps=[-1])
-    else:
-        return None
+def pitch_bins_f(time_steps):
+    def f(x):
+        bins = tf.reduce_sum([x[:, :, i::12, 0] for i in range(12)], axis=3)
+        bins = tf.tile(bins, [NUM_OCTAVES, 1, 1])
+        bins = tf.reshape(bins, [tf.shape(x)[0], time_steps, NUM_NOTES, 1])
+        return bins
+    return f
 
-class PassthroughLayer(Layer):
-    """
-    Empty "layer" used to get the final output of the LSTM
-    """
+def time_axis(dropout, time_layers):
+    def f(notes, beat):
+        # time_steps = notes.shape.dims
+        # print time_steps
+        time_steps = int(notes.get_shape()[1])
+
+        # TODO: Experiment with when to apply conv
+        note_octave = TimeDistributed(Conv1D(OCTAVE_UNITS, 24, padding='same'))(notes)
+        note_octave = Activation('tanh')(note_octave)
+        note_octave = Dropout(dropout)(note_octave)
+
+        # Create features for every single note.
+        note_features = Concatenate()([
+            Lambda(pitch_pos_in_f(time_steps))(notes),
+            Lambda(pitch_class_in_f(time_steps))(notes),
+            Lambda(pitch_bins_f(time_steps))(notes),
+            note_octave,
+            TimeDistributed(RepeatVector(NUM_NOTES))(beat)
+        ])
+
+        x = note_features
+
+        # [batch, notes, time, features]
+        x = Permute((2, 1, 3))(x)
+
+        # Apply LSTMs
+        for layer in time_layers:
+            # Integrate style
+            x = TimeDistributed(LSTM(layer, return_sequences=True))(x)
+            x = Dropout(dropout)(x)
+
+        # [batch, time, notes, features]
+        return Permute((2, 1, 3))(x)
+    return f
+
+def note_axis(dropout, harm_layers):
+    dense_layer_cache = {}
+    lstm_layer_cache = {}
+    note_dense = Dense(2, activation='sigmoid', name='note_dense')
+    volume_dense = Dense(1, name='volume_dense')
+
+    def f(x, chosen):
+        time_steps = int(x.get_shape()[1])
+        units = int(x.get_shape()[3])
+        print units
+        # Shift target one note to the left.
+        shift_chosen = Lambda(lambda x: tf.pad(x[:, :, :-1, :], [[0, 0], [0, 0], [1, 0], [0, 0]]))(chosen)
+
+        # [batch, time, notes, 1]
+        shift_chosen = Reshape((time_steps, NUM_NOTES, -1))(shift_chosen)
+        # [batch, time, notes, features + 1]
+        x = Concatenate(axis=3)([x, shift_chosen])
+
+        for i, layer in enumerate(harm_layers):
+            # Integrate style
+            if layer not in dense_layer_cache:
+                dense_layer_cache[i] = Dense(units)
+
+            if layer not in lstm_layer_cache:
+                lstm_layer_cache[i] = LSTM(layer, return_sequences=True)
+
+            x = TimeDistributed(lstm_layer_cache[i])(x)
+            x = Dropout(dropout)(x)
+
+        return Concatenate()([note_dense(x), volume_dense(x)])
+    return f
+
+def build(time_layers, harm_layers, time_steps, notes_per_bar, input_dropout=0.2, dropout=0.5):
+    notes_in = Input((time_steps, NUM_NOTES, NOTE_UNITS))
+    beat_in = Input((time_steps, notes_per_bar))
+    # Target input for conditioning
+    chosen_in = Input((time_steps, NUM_NOTES, NOTE_UNITS))
     
-    def __init__(self):
-        self.is_recursive = False
-    
-    def create_variables(self):
-        pass
-    
-    def activate(self, x):
-        return x
-    
-    @property
-    def params(self):
-        return []
-    
-    @params.setter
-    def params(self, param_list):
-        pass
+    # Dropout inputs
+    notes = Dropout(input_dropout)(notes_in)
+    beat = Dropout(input_dropout)(beat_in)
+    chosen = Dropout(input_dropout)(chosen_in)
 
-        
-def get_last_layer(result):
-    if isinstance(result, list):
-        return result[-1]
-    else:
-        return result
+    print notes_in
 
-def ensure_list(result):
-    if isinstance(result, list):
-        return result
-    else:
-        return [result]
-    
+    """ Time axis """
+    time_out = time_axis(dropout, time_layers)(notes, beat)
 
-class Model(object):
-    
-    def __init__(self, timeLayerSizes, harmLayerSizes, dropout=0.5):
-        
-        self.timeLayerSizes = timeLayerSizes
-        self.harmLayerSizes = harmLayerSizes
+    """ Note Axis & Prediction Layer """
+    naxis = note_axis(dropout, harm_layers)
+    notes_out = naxis(time_out, chosen)
 
-        # From our architecture definition, size of the notewise input
-        self.timeInputSize = 80
-        
-        # time network maps from notewise input size to various hidden sizes
-        self.timeModel = StackedCells( self.timeInputSize, celltype=LSTM, layers = timeLayerSizes)
-        self.timeModel.layers.append(PassthroughLayer())
-        
-        # pitch network takes last layer of time model and state of last note, moving upward
-        # and eventually ends with a two-element sigmoid layer
-        self.harmInputSize = timeLayerSizes[-1] + 2
-        self.harmModel = StackedCells( self.harmInputSize, celltype=LSTM, layers = harmLayerSizes)
-        self.harmModel.layers.append(Layer(harmLayerSizes[-1], 2, activation = T.nnet.sigmoid))
-        
-        self.dropout = dropout
+    model = Model([notes_in, chosen_in, beat_in], [notes_out])
+    model.compile(optimizer='nadam', loss=[primary_loss])
 
-        self.conservativity = T.fscalar()
-        self.srng = T.shared_randomstreams.RandomStreams(np.random.randint(0, 1024))
+    """ Generation Models """
+    time_model = Model([notes_in, beat_in], [time_out])
 
-        self.setup_train()
-        self.setup_predict()
-        self.setup_slow_walk()
+    note_features = Input((1, NUM_NOTES, time_layers[0]), name='note_features')
+    chosen_gen_in = Input((1, NUM_NOTES, NOTE_UNITS), name='chosen_gen_in')
 
-    @property
-    def params(self):
-        return self.timeModel.params + self.harmModel.params
-    
-    @params.setter
-    def params(self, param_list):
-        ntimeparams = len(self.timeModel.params)
-        self.timeModel.params = param_list[:ntimeparams]
-        self.harmModel.params = param_list[ntimeparams:]
+    # Dropout inputs
+    chosen_gen = Dropout(input_dropout)(chosen_gen_in)
 
-    @property
-    def learned_config(self):
-        return [self.timeModel.params, self.harmModel.params, [l.initial_hidden_state for mod in (self.timeModel, self.harmModel) for l in mod.layers if has_hidden(l)]]
+    note_gen_out = naxis(note_features, chosen_gen)
 
-    @learned_config.setter
-    def learned_config(self, learned_list):
-        self.timeModel.params = learned_list[0]
-        self.harmModel.params = learned_list[1]
-        for l, val in zip((l for mod in (self.timeModel, self.harmModel) for l in mod.layers if has_hidden(l)), learned_list[2]):
-            l.initial_hidden_state.set_value(val.get_value())
-    
-    def setup_train(self):
+    note_model = Model([note_features, chosen_gen_in], note_gen_out)
 
-        # dimensions: (batch, time, notes, input_data) with input_data as in architecture
-        self.input_mat = T.btensor4()
-        # dimensions: (batch, time, notes, onOrArtic) with 0:on, 1:artic
-        self.output_mat = T.btensor4()
-        
-        self.epsilon = np.spacing(np.float32(1.0))
-
-        def step_time(in_data, *other):
-            other = list(other)
-            split = -len(self.timeLayerSizes) if self.dropout else len(other)
-            hiddens = other[:split]
-            masks = [None] + other[split:] if self.dropout else []
-            new_states = self.timeModel.forward(in_data, prev_hiddens=hiddens, dropout=masks)
-            return new_states
-        
-        def step_note(in_data, *other):
-            other = list(other)
-            split = -len(self.harmLayerSizes) if self.dropout else len(other)
-            hiddens = other[:split]
-            masks = [None] + other[split:] if self.dropout else []
-            new_states = self.harmModel.forward(in_data, prev_hiddens=hiddens, dropout=masks)
-            return new_states
-        
-        # We generate an output for each input, so it doesn't make sense to use the last output as an input.
-        # Note that we assume the sentinel start value is already present
-        # TEMP CHANGE: NO SENTINEL
-        input_slice = self.input_mat[:,0:-1]
-        n_batch, n_time, n_note, n_ipn = input_slice.shape
-        
-        # time_inputs is a matrix (time, batch/note, input_per_note)
-        time_inputs = input_slice.transpose((1,0,2,3)).reshape((n_time,n_batch*n_note,n_ipn))
-        num_time_parallel = time_inputs.shape[1]
-        
-        # apply dropout
-        if self.dropout > 0:
-            time_masks = theano_lstm.MultiDropout( [(num_time_parallel, shape) for shape in self.timeLayerSizes], self.dropout)
-        else:
-            time_masks = []
-
-        time_outputs_info = [initial_state_with_taps(layer, num_time_parallel) for layer in self.timeModel.layers]
-        time_result, _ = theano.scan(fn=step_time, sequences=[time_inputs], non_sequences=time_masks, outputs_info=time_outputs_info)
-        
-        self.time_thoughts = time_result
-        
-        # Now time_result is a list of matrix [layer](time, batch/note, hidden_states) for each layer but we only care about 
-        # the hidden state of the last layer.
-        # Transpose to be (note, batch/time, hidden_states)
-        last_layer = get_last_layer(time_result)
-        n_hidden = last_layer.shape[2]
-        time_final = get_last_layer(time_result).reshape((n_time,n_batch,n_note,n_hidden)).transpose((2,1,0,3)).reshape((n_note,n_batch*n_time,n_hidden))
-        
-        # note_choices_inputs represents the last chosen note. Starts with [0,0], doesn't include last note.
-        # In (note, batch/time, 2) format
-        # Shape of start is thus (1, N, 2), concatenated with all but last element of output_mat transformed to (x, N, 2)
-        start_note_values = T.alloc(np.array(0,dtype=np.int8), 1, time_final.shape[1], 2 )
-        correct_choices = self.output_mat[:,1:,0:-1,:].transpose((2,0,1,3)).reshape((n_note-1,n_batch*n_time,2))
-        note_choices_inputs = T.concatenate([start_note_values, correct_choices], axis=0)
-        
-        # Together, this and the output from the last LSTM goes to the new LSTM, but rotated, so that the batches in
-        # one direction are the steps in the other, and vice versa.
-        note_inputs = T.concatenate( [time_final, note_choices_inputs], axis=2 )
-        num_timebatch = note_inputs.shape[1]
-        
-        # apply dropout
-        if self.dropout > 0:
-            pitch_masks = theano_lstm.MultiDropout( [(num_timebatch, shape) for shape in self.harmLayerSizes], self.dropout)
-        else:
-            pitch_masks = []
-
-        note_outputs_info = [initial_state_with_taps(layer, num_timebatch) for layer in self.harmModel.layers]
-        note_result, _ = theano.scan(fn=step_note, sequences=[note_inputs], non_sequences=pitch_masks, outputs_info=note_outputs_info)
-        
-        self.note_thoughts = note_result
-        
-        # Now note_result is a list of matrix [layer](note, batch/time, onOrArticProb) for each layer but we only care about 
-        # the hidden state of the last layer.
-        # Transpose to be (batch, time, note, onOrArticProb)
-        note_final = get_last_layer(note_result).reshape((n_note,n_batch,n_time,2)).transpose(1,2,0,3)
-        
-        # The cost of the entire procedure is the negative log likelihood of the events all happening.
-        # For the purposes of training, if the ouputted probability is P, then the likelihood of seeing a 1 is P, and
-        # the likelihood of seeing 0 is (1-P). So the likelihood is (1-P)(1-x) + Px = 2Px - P - x + 1
-        # Since they are all binary decisions, and are all probabilities given all previous decisions, we can just
-        # multiply the likelihoods, or, since we are logging them, add the logs.
-        
-        # Note that we mask out the articulations for those notes that aren't played, because it doesn't matter
-        # whether or not those are articulated.
-        # The padright is there because self.output_mat[:,:,:,0] -> 3D matrix with (b,x,y), but we need 3d tensor with 
-        # (b,x,y,1) instead
-        active_notes = T.shape_padright(self.output_mat[:,1:,:,0])
-        mask = T.concatenate([T.ones_like(active_notes),active_notes], axis=3)
-        
-        loglikelihoods = mask * T.log( 2*note_final*self.output_mat[:,1:] - note_final - self.output_mat[:,1:] + 1 + self.epsilon )
-        self.cost = T.neg(T.sum(loglikelihoods))
-        
-        updates, _, _, _, _ = create_optimization_updates(self.cost, self.params, method="adadelta")
-        self.update = theano.function(
-            inputs=[self.input_mat, self.output_mat],
-            outputs=self.cost,
-            updates=updates,
-            allow_input_downcast=True)
-
-        self.update_thought_fun = theano.function(
-            inputs=[self.input_mat, self.output_mat],
-            outputs= ensure_list(self.time_thoughts) + ensure_list(self.note_thoughts) + [self.cost],
-            allow_input_downcast=True)
-    
-    def _predict_step_note(self, in_data_from_time, *states):
-        # States is [ *hiddens, last_note_choice ]
-        hiddens = list(states[:-1])
-        in_data_from_prev = states[-1]
-        in_data = T.concatenate([in_data_from_time, in_data_from_prev])
-
-        # correct for dropout
-        if self.dropout > 0:
-            masks = [1 - self.dropout for layer in self.harmModel.layers]
-            masks[0] = None
-        else:
-            masks = []
-
-        new_states = self.harmModel.forward(in_data, prev_hiddens=hiddens, dropout=masks)
-        
-        # Now new_states is a per-layer set of activations.
-        probabilities = get_last_layer(new_states)
-        
-        # Thus, probabilities is a vector of two probabilities, P(play), and P(artic | play)
-        
-        shouldPlay = self.srng.uniform() < (probabilities[0] ** self.conservativity)
-        shouldArtic = shouldPlay * (self.srng.uniform() < probabilities[1])
-        
-        chosen = T.cast(T.stack(shouldPlay, shouldArtic), "int8")
-        
-        return ensure_list(new_states) + [chosen]
-
-    def setup_predict(self):
-        # In prediction mode, note steps are contained in the time steps. So the passing gets a little bit hairy.
-
-        self.predict_seed = T.bmatrix()
-        self.steps_to_simulate = T.iscalar()
-
-        def step_time(*states):
-            # States is [ *hiddens, prev_result, time]
-            hiddens = list(states[:-2])
-            in_data = states[-2]
-            time = states[-1]
-
-            # correct for dropout
-            if self.dropout > 0:
-                masks = [1 - self.dropout for layer in self.timeModel.layers]
-                masks[0] = None
-            else:
-                masks = []
-
-            new_states = self.timeModel.forward(in_data, prev_hiddens=hiddens, dropout=masks)
-            
-            # Now new_states is a list of matrix [layer](notes, hidden_states) for each layer
-            time_final = get_last_layer(new_states)
-            
-            start_note_values = theano.tensor.alloc(np.array(0,dtype=np.int8), 2)
-            
-            # This gets a little bit complicated. In the training case, we can pass in a combination of the
-            # time net's activations with the known choices. But in the prediction case, those choices don't
-            # exist yet. So instead of iterating over the combination, we iterate over only the activations,
-            # and then combine in the previous outputs in the step. And then since we are passing outputs to
-            # previous inputs, we need an additional outputs_info for the initial "previous" output of zero.
-            note_outputs_info = ([ initial_state_with_taps(layer) for layer in self.harmModel.layers ] +
-                                 [ dict(initial=start_note_values, taps=[-1]) ])
-            
-            notes_result, updates = theano.scan(fn=self._predict_step_note, sequences=[time_final], outputs_info=note_outputs_info)
-            
-            # Now notes_result is a list of matrix [layer/output](notes, onOrArtic)
-            output = get_last_layer(notes_result)
-            
-            next_input = OutputFormToInputFormOp()(output, time + 1) # TODO: Fix time
-            #next_input = T.cast(T.alloc(0, 3, 4),'int64')
-            
-            return (ensure_list(new_states) + [ next_input, time + 1, output ]), updates
-        
-        # start_sentinel = startSentinel()
-        num_notes = self.predict_seed.shape[0]
-        
-        time_outputs_info = ([ initial_state_with_taps(layer, num_notes) for layer in self.timeModel.layers ] +
-                             [ dict(initial=self.predict_seed, taps=[-1]),
-                               dict(initial=0, taps=[-1]),
-                               None ])
-            
-        time_result, updates = theano.scan( fn=step_time, 
-                                            outputs_info=time_outputs_info, 
-                                            n_steps=self.steps_to_simulate )
-        
-        self.predict_thoughts = time_result
-        
-        self.predicted_output = time_result[-1]
-        
-        self.predict_fun = theano.function(
-            inputs=[self.steps_to_simulate, self.conservativity, self.predict_seed],
-            outputs=self.predicted_output,
-            updates=updates,
-            allow_input_downcast=True)
-
-        self.predict_thought_fun = theano.function(
-            inputs=[self.steps_to_simulate, self.conservativity, self.predict_seed],
-            outputs=ensure_list(self.predict_thoughts),
-            updates=updates,
-            allow_input_downcast=True)
-
-    def setup_slow_walk(self):
-
-        self.walk_input = theano.shared(np.ones((2,2), dtype='int8'))
-        self.walk_time = theano.shared(np.array(0, dtype='int64'))
-        self.walk_hiddens = [theano.shared(np.ones((2,2), dtype=theano.config.floatX)) for layer in self.timeModel.layers if has_hidden(layer)]
-        
-        # correct for dropout
-        if self.dropout > 0:
-            masks = [1 - self.dropout for layer in self.timeModel.layers]
-            masks[0] = None
-        else:
-            masks = []
-
-        new_states = self.timeModel.forward(self.walk_input, prev_hiddens=self.walk_hiddens, dropout=masks)
-
-        # Now new_states is a list of matrix [layer](notes, hidden_states) for each layer
-        time_final = get_last_layer(new_states)
-        
-        start_note_values = theano.tensor.alloc(np.array(0,dtype=np.int8), 2)
-        note_outputs_info = ([ initial_state_with_taps(layer) for layer in self.harmModel.layers ] +
-                             [ dict(initial=start_note_values, taps=[-1]) ])
-        
-        notes_result, updates = theano.scan(fn=self._predict_step_note, sequences=[time_final], outputs_info=note_outputs_info)
-        
-        # Now notes_result is a list of matrix [layer/output](notes, onOrArtic)
-        output = get_last_layer(notes_result)
-        
-        next_input = OutputFormToInputFormOp()(output, self.walk_time + 1) # TODO: Fix time
-        #next_input = T.cast(T.alloc(0, 3, 4),'int64')
-
-        slow_walk_results = (new_states[:-1] + notes_result[:-1] + [ next_input, output ])
-
-        updates.update({
-                self.walk_time: self.walk_time+1,
-                self.walk_input: next_input
-            })
-
-        updates.update({hidden:newstate for hidden, newstate, layer in zip(self.walk_hiddens, new_states, self.timeModel.layers) if has_hidden(layer)})
-
-        self.slow_walk_fun = theano.function(
-            inputs=[self.conservativity],
-            outputs=slow_walk_results,
-            updates=updates,
-            allow_input_downcast=True)
-
-    def start_slow_walk(self, seed):
-        seed = np.array(seed)
-        num_notes = seed.shape[0]
-
-        self.walk_time.set_value(0)
-        self.walk_input.set_value(seed)
-        for layer, hidden in zip((l for l in self.timeModel.layers if has_hidden(l)),self.walk_hiddens):
-            hidden.set_value(np.repeat(np.reshape(layer.initial_hidden_state.get_value(), (1,-1)), num_notes, axis=0))
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return model, time_model, note_model
