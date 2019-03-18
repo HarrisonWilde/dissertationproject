@@ -1,5 +1,6 @@
-output/
+data/
 out/
+nnet_models/
 
 *.pyc
 *.DS_Store

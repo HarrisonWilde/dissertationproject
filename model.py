@@ -1,155 +1,114 @@
-import numpy as np, tensorflow as tf
-from keras.layers import Input, CuDNNLSTM, LSTM, Dense, Dropout, Lambda, Reshape, Permute
-from keras.layers import TimeDistributed, RepeatVector, Conv1D, Activation
-from keras.layers import Embedding, Flatten
-from keras.layers.merge import Concatenate, Add
-from keras.models import Model
-import keras.backend as K
-from keras import losses
-
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.autograd import Variable
+import config
 from util import *
-from constants import *
+import numpy as np
 
-# Note any use of the number 12 is significant in that it is the number of notes in a standard octave.
-
-def primary_loss(y_true, y_pred):
-    # 3 separate loss calculations based on if note is played or not
-    played = y_true[:, :, :, 0]
-    bce_note = losses.binary_crossentropy(y_true[:, :, :, 0], y_pred[:, :, :, 0])
-    bce_replay = losses.binary_crossentropy(y_true[:, :, :, 1], tf.multiply(played, y_pred[:, :, :, 1]) + tf.multiply(1 - played, y_true[:, :, :, 1]))
-    mse = losses.mean_squared_error(y_true[:, :, :, 2], tf.multiply(played, y_pred[:, :, :, 2]) + tf.multiply(1 - played, y_true[:, :, :, 2]))
-    return bce_note + bce_replay + mse
-
-def pitch_pos_in_f(time_steps):
+class WildeNet(nn.Module):
     """
-    Returns a constant containing pitch position of each note
+    The WildeNet architecture.
     """
-    def f(x):
-        note_ranges = tf.range(NUM_NOTES, dtype='float32') / NUM_NOTES
-        repeated_ranges = tf.tile(note_ranges, [tf.shape(x)[0] * time_steps])
-        return tf.reshape(repeated_ranges, [tf.shape(x)[0], time_steps, NUM_NOTES, 1])
-    return f
+    def __init__(self, num_units=512, num_layers=4, mood_units=32):
+        super().__init__()
+        self.num_units = num_units
+        self.num_layers = num_layers
+        self.mood_units = mood_units
 
-def pitch_class_in_f(time_steps):
-    """
-    Returns a constant containing pitch class of each note
-    """
-    def f(x):
-        pitch_class_matrix = np.array([one_hot(n % 12, 12) for n in range(NUM_NOTES)])
-        pitch_class_matrix = tf.constant(pitch_class_matrix, dtype='float32')
-        pitch_class_matrix = tf.reshape(pitch_class_matrix, [1, 1, NUM_NOTES, 12])
-        return tf.tile(pitch_class_matrix, [tf.shape(x)[0], time_steps, 1, 1])
-    return f
+        # RNN
+        self.rnns = [
+            nn.GRU(config.NUM_ACTIONS + mood_units, num_units, 2, batch_first=True) if i == 0 else
+            DilatedRNN(nn.GRU(num_units, num_units, batch_first=True), 2 ** i) if i < 2 else
+            DilatedRNN(nn.LSTM(num_units, num_units, batch_first=True), 2 ** i)
+            for i in range(num_layers)
+        ]
 
-def pitch_bins_f(time_steps):
-    def f(x):
-        bins = tf.reduce_sum([x[:, :, i::12, 0] for i in range(12)], axis=3)
-        bins = tf.tile(bins, [NUM_OCTAVES, 1, 1])
-        bins = tf.reshape(bins, [tf.shape(x)[0], time_steps, NUM_NOTES, 1])
-        return bins
-    return f
+        self.output_linear = nn.Linear(self.num_units, config.NUM_ACTIONS)
 
-def time_axis(dropout, time_layers):
-    def f(notes, beat):
-        # time_steps = notes.shape.dims
-        # print time_steps
-        time_steps = int(notes.get_shape()[1])
+        for i, rnn in enumerate(self.rnns):
+            self.add_module('rnn_' + str(i), rnn)
 
-        # TODO: Experiment with when to apply conv
-        note_octave = TimeDistributed(Conv1D(OCTAVE_UNITS, 24, padding='same'))(notes)
-        note_octave = Activation('tanh')(note_octave)
-        note_octave = Dropout(dropout)(note_octave)
+        # Style
+        self.mood_linear = nn.Linear(config.NUM_MOODS, self.mood_units)
+        # self.mood_layer = nn.Linear(self.mood_units, self.num_units * self.num_layers)
 
-        # Create features for every single note.
-        note_features = Concatenate()([
-            Lambda(pitch_pos_in_f(time_steps))(notes),
-            Lambda(pitch_class_in_f(time_steps))(notes),
-            Lambda(pitch_bins_f(time_steps))(notes),
-            note_octave,
-            TimeDistributed(RepeatVector(NUM_NOTES))(beat)
-        ])
+    def forward(self, x, mood, states=None):
+        batch_size = x.size(0)
+        seq_len = x.size(1)
 
-        x = note_features
+        # Distributed mood representation
+        mood = self.mood_linear(mood)
+        # mood = F.tanh(self.mood_layer(mood))
+        mood = mood.unsqueeze(1).expand(batch_size, seq_len, self.mood_units)
+        x = torch.cat((x, mood), dim=2)
 
-        # [batch, notes, time, features]
-        x = Permute((2, 1, 3))(x)
+        ## Process RNN ##
+        if states is None:
+            states = [None for _ in range(self.num_layers)]
 
-        # Apply LSTMs
-        for layer in time_layers:
-            # Integrate style
-            x = TimeDistributed(LSTM(layer, return_sequences=True))(x)
-            x = Dropout(dropout)(x)
+        for l, rnn in enumerate(self.rnns):
+            prev_x = x
+            x, states[l] = rnn(x, states[l])
 
-        # [batch, time, notes, features]
-        return Permute((2, 1, 3))(x)
-    return f
+            if l > 0:
+                x = prev_x + x
 
-def note_axis(dropout, harm_layers):
-    dense_layer_cache = {}
-    lstm_layer_cache = {}
-    note_dense = Dense(2, activation='sigmoid', name='note_dense')
-    volume_dense = Dense(1, name='volume_dense')
+        x = self.output_linear(x)
+        return x, states
 
-    def f(x, chosen):
-        time_steps = int(x.get_shape()[1])
-        units = int(x.get_shape()[3])
-        print units
-        # Shift target one note to the left.
-        shift_chosen = Lambda(lambda x: tf.pad(x[:, :, :-1, :], [[0, 0], [0, 0], [1, 0], [0, 0]]))(chosen)
+    def generate(self, x, mood, states, temperature=1):
+        """ Returns the probability of outputs """
+        x, states = self.forward(x, mood, states)
+        seq_len = x.size(1)
+        x = x.view(-1, config.NUM_ACTIONS)
+        x = F.softmax(x / temperature, dim=1)
+        x = x.view(-1, seq_len, config.NUM_ACTIONS)
+        return x, states
 
-        # [batch, time, notes, 1]
-        shift_chosen = Reshape((time_steps, NUM_NOTES, -1))(shift_chosen)
-        # [batch, time, notes, features + 1]
-        x = Concatenate(axis=3)([x, shift_chosen])
-
-        for i, layer in enumerate(harm_layers):
-            # Integrate style
-            if layer not in dense_layer_cache:
-                dense_layer_cache[i] = Dense(units)
-
-            if layer not in lstm_layer_cache:
-                lstm_layer_cache[i] = LSTM(layer, return_sequences=True)
-
-            x = TimeDistributed(lstm_layer_cache[i])(x)
-            x = Dropout(dropout)(x)
-
-        return Concatenate()([note_dense(x), volume_dense(x)])
-    return f
-
-def build(time_layers, harm_layers, time_steps, notes_per_bar, input_dropout=0.2, dropout=0.5):
-    notes_in = Input((time_steps, NUM_NOTES, NOTE_UNITS))
-    beat_in = Input((time_steps, notes_per_bar))
-    # Target input for conditioning
-    chosen_in = Input((time_steps, NUM_NOTES, NOTE_UNITS))
+class DilatedRNN(nn.Module):
+    """ https://arxiv.org/pdf/1710.02224.pdf """
+    def __init__(self, wrap_rnn, dilation=1):
+        """
+        Args:
+            wrap_rnn: The RNN module to wrap.
+            dilation: The dilation factor
+        """
+        super().__init__()
+        assert wrap_rnn.batch_first
+        self.rnn = wrap_rnn
+        self.dilation = dilation
     
-    # Dropout inputs
-    notes = Dropout(input_dropout)(notes_in)
-    beat = Dropout(input_dropout)(beat_in)
-    chosen = Dropout(input_dropout)(chosen_in)
+    def forward(self, x, states):
+        """
+        Args:
+            x: A sequence of features [batch, seq_len, features]
+        """
+        # The number of dilation = the number of parallelism that can be achieved.
+        # Move the additional parallels into batch dimension
+        batch_size = x.size(0)
+        seq_len = x.size(1)
+        if seq_len == 1:
+            # Single step requires us to store which step we are on.
+            if states is None:
+                # Each memory tensor corresponds to a dilation.
+                states = (0, tuple(None for _ in range(self.dilation)))
+            step, memories = states
+            memory_id = step % self.dilation
+            x, memory = self.rnn(x, memories[memory_id])
+            states = (step + 1, memories[:memory_id] + (memory,) + memories[memory_id + 1:])
+            return x, states
 
-    print notes_in
-
-    """ Time axis """
-    time_out = time_axis(dropout, time_layers)(notes, beat)
-
-    """ Note Axis & Prediction Layer """
-    naxis = note_axis(dropout, harm_layers)
-    notes_out = naxis(time_out, chosen)
-
-    model = Model([notes_in, chosen_in, beat_in], [notes_out])
-    model.compile(optimizer='nadam', loss=[primary_loss])
-
-    """ Generation Models """
-    time_model = Model([notes_in, beat_in], [time_out])
-
-    note_features = Input((1, NUM_NOTES, time_layers[0]), name='note_features')
-    chosen_gen_in = Input((1, NUM_NOTES, NOTE_UNITS), name='chosen_gen_in')
-
-    # Dropout inputs
-    chosen_gen = Dropout(input_dropout)(chosen_gen_in)
-
-    note_gen_out = naxis(note_features, chosen_gen)
-
-    note_model = Model([note_features, chosen_gen_in], note_gen_out)
-
-    return model, time_model, note_model
+        # Taking in a full sequence
+        assert seq_len % self.dilation == 0, seq_len
+        x = x.unfold(1, self.dilation, self.dilation)
+        x = x.permute(0, 3, 1, 2)
+        x = x.contiguous().view(batch_size * self.dilation, seq_len // self.dilation, -1)
+        x, states = self.rnn(x, states)
+        # X is now [batch * dilation, seq_len//dilation, features]
+        # We want to restore it back into [batch, seq_len, features]
+        # But we can't simply reshape it, because that messes up the order.
+        x = x.contiguous().view(batch_size, self.dilation, seq_len // self.dilation, -1)
+        x = x.permute(0, 2, 1, 3)
+        x = x.contiguous().view(batch_size, seq_len, -1)
+        return x, states
