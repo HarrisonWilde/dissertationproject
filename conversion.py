@@ -22,21 +22,21 @@ class TrackBuilder():
         return self
     
     def __next__(self):
-        evt = next(self.event_seq)
+        evt = next(self.event_seq).item()
 
         # Interpret event data
-        if evt >= config.VEL_OFFSET:
+        if evt >= config.VELOCITY_OFFSET:
             # A velocity change
-            self.last_velocity = (evt - config.VEL_OFFSET) * (config.MIDI_VELOCITY // config.VEL_QUANTIZATION)
+            self.last_velocity = (evt - config.VELOCITY_OFFSET) * (config.MIDI_VELOCITY // config.VELOCITY_BINS)
         elif evt >= config.TIME_OFFSET:
             # Shifting forward in time
             tick_bin = evt - TIME_OFFSET
-            assert tick_bin >= 0 and tick_bin < TIME_QUANTIZATION
+            assert tick_bin >= 0 and tick_bin < TIME_BINS
             seconds = config.TICK_BINS[tick_bin] / config.TICKS_PER_SEC
             self.delta_time += int(mido.second2tick(seconds, self.midi_file.ticks_per_beat, self.tempo))
-        elif evt >= config.NOTE_ON_OFFSET:
+        elif evt >= 0:
             # Turning a note on (or off if velocity = 0)
-            note = evt - config.NOTE_ON_OFFSET
+            note = evt
             # We can turn a note on twice, indicating a replay
             if self.last_velocity == 0:
                 # Note off
@@ -106,16 +106,16 @@ def midi_to_seq(midi_file, track):
             continue
 
         if event_type == 'note_on':
-            velocity = (msg.velocity) // (config.MIDI_VELOCITY // config.VEL_QUANTIZATION)
+            velocity = (msg.velocity) // (config.MIDI_VELOCITY // config.VELOCITY_BINS)
         elif event_type == 'note_off':
             velocity = 0
         
         # If velocity is different, we update it
         if last_velocity != velocity:
-            events.append(config.VEL_OFFSET + velocity)
+            events.append(config.VELOCITY_OFFSET + velocity)
             last_velocity = velocity
 
-        events.append(config.NOTE_ON_OFFSET + msg.note)
+        events.append(msg.note)
 
     return np.array(events)
 

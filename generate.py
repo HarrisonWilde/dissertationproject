@@ -1,6 +1,5 @@
 import numpy as np
-import argparse
-import heapq
+import argparse, heapq
 from datetime import datetime
 
 import torch
@@ -51,9 +50,9 @@ class Generation():
         # Iterate through the beam
         for prev_prob, evts, state in self.beam:
             if len(evts) > 0:
-                prev_event = var(to_torch(one_hot(evts[-1], config.NUM_ACTIONS))).unsqueeze(0)
+                prev_event = var(to_torch(one_hot(evts[-1], config.FULL_RANGE))).unsqueeze(0)
             else:
-                prev_event = var(torch.zeros((1, config.NUM_ACTIONS)))
+                prev_event = var(torch.zeros((1, config.FULL_RANGE)))
 
             prev_event = prev_event.unsqueeze(1)
             probs, new_state = self.model.generate(prev_event, mood, state, temperature=self.temperature)
@@ -128,12 +127,11 @@ def main():
     print('Beam: {}'.format(args.beam))
     print('Adaptive Temperature: {}'.format(args.adaptive))
     print('Moods: {}'.format(mood))
-    settings['force_cpu'] = True
     
-    model = WildeNet()
+    model = WildeNet().cuda()
 
     if args.model:
-        model.load_state_dict(torch.load(args.model, map_location='cpu'))
+        model.load_state_dict(torch.load(args.model))
     else:
         print('WARNING: No model loaded! Please specify model path.')
 

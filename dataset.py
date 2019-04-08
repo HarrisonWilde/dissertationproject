@@ -20,7 +20,7 @@ def load():
 
     for filename in tqdm(os.listdir(config.MIDI_DIR)):
 
-        if filename.endswith('.mid'):
+        if filename.endswith(('.mid', '.midi')):
             try:
                 # Pad the sequence by an empty event
                 seq = load_midi(os.path.join(config.MIDI_DIR, filename))
@@ -30,6 +30,7 @@ def load():
                     seqs_sum += len(seq)
                 else:
                     print('Ignoring {} because it is too short {}.'.format(filename, len(seq)))
+                    pass
 
             except Exception as e:
                 print('Unable to load ' + filename, e)
@@ -37,7 +38,7 @@ def load():
             if filename.split()[0] in ('16384', '32768'):
                 filename = filename[6:]
             try:
-                mood = np.load(os.path.join(config.MOOD_DIR, filename[:-4] + '.npy'), encoding='latin1').item()
+                mood = np.load(os.path.join(config.MOOD_DIR, os.path.splitext(filename)[0] + '.npy'), encoding='latin1').item()
                 moods.append(torch.FloatTensor([
                     1 if mood['valence_sad_ratio'] >= 50 else 0, 
                     1 if mood['valence_neutral_ratio'] >= 50 else 0, 
@@ -134,7 +135,7 @@ def batcher(sampler, batch_size, seq_len=config.SEQ_LEN):
 #     time_sum = 0
 #     seq_len = 0
 #     for i, evt in enumerate(sequence):
-#         if evt >= TIME_OFFSET and evt < VEL_OFFSET:
+#         if evt >= TIME_OFFSET and evt < VELOCITY_OFFSET:
 #             # This is a time shift event
 #             # Convert time event to number of seconds
 #             # Then, accumulate the time

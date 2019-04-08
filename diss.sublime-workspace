@@ -1,0 +1,1075 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"aggre",
+				"aggregate_diary"
+			],
+			[
+				"spread_",
+				"spread_diary_avg"
+			],
+			[
+				"fac",
+				"factor"
+			],
+			[
+				"prop_",
+				"year_avg_prop_pv"
+			],
+			[
+				"yea",
+				"aggregate_diary_year"
+			],
+			[
+				"agg",
+				"aggregate_diary"
+			],
+			[
+				"agr",
+				"aggregate_diary_year"
+			],
+			[
+				"year_",
+				"year_avg_prop_pv"
+			],
+			[
+				"rle",
+				"relevant_diary"
+			],
+			[
+				"temp_",
+				"temp_no_frez"
+			],
+			[
+				"freez",
+				"freezer_household_data"
+			],
+			[
+				"num_mic",
+				"num_micfrez"
+			],
+			[
+				"veget",
+				"vegetarian_household_data"
+			],
+			[
+				"diar",
+				"diary_nutrient_data"
+			],
+			[
+				"nutri",
+				"nutrient_data"
+			],
+			[
+				"num_v",
+				"num_vegetarians"
+			],
+			[
+				"relev",
+				"relevant_diary"
+			],
+			[
+				"rel",
+				"relevant_diary"
+			],
+			[
+				"releva",
+				"relevant_diary"
+			],
+			[
+				"arou",
+				"arousal_mid_ratio"
+			],
+			[
+				"arous",
+				"arousal_intense_ratio"
+			],
+			[
+				"trainin",
+				"training_loss"
+			],
+			[
+				"NOTES_PER",
+				"NOTES_PER_BATCH"
+			],
+			[
+				"MODE",
+				"MODEL_FILE"
+			],
+			[
+				"notes_per",
+				"notes_per_bar"
+			],
+			[
+				"Note",
+				"NoteOffEvent"
+			],
+			[
+				"notes_p",
+				"notes_per_beat"
+			],
+			[
+				"retu",
+				"return_sequences"
+			],
+			[
+				"notes_per_b",
+				"notes_per_beat"
+			],
+			[
+				"harm",
+				"harmLayerSizes"
+			],
+			[
+				"colo",
+				"colour2counter"
+			],
+			[
+				"mlp",
+				"mlpbare"
+			],
+			[
+				"agg_",
+				"agg_engineer_features_merge"
+			],
+			[
+				"remain",
+				"remaining_data"
+			],
+			[
+				"Filter",
+				"Filtered"
+			],
+			[
+				"max_",
+				"max_depth"
+			],
+			[
+				"min_scor",
+				"min_score_row"
+			],
+			[
+				"param",
+				"param_result"
+			],
+			[
+				"param_r",
+				"param_results"
+			],
+			[
+				"para",
+				"param_results"
+			],
+			[
+				"param_",
+				"param_result"
+			],
+			[
+				"multi",
+				"multi_weighted_logloss"
+			],
+			[
+				"class_",
+				"class_weights"
+			],
+			[
+				"clas",
+				"class_weights"
+			],
+			[
+				"lgbm_",
+				"lgbm_multi_weighted_logloss"
+			],
+			[
+				"Da",
+				"DataFrame"
+			],
+			[
+				"value",
+				"value_counts"
+			],
+			[
+				"com",
+				"compute_ll"
+			],
+			[
+				"gam",
+				"gamma_sum"
+			],
+			[
+				"max",
+				"max.numit"
+			],
+			[
+				"iowaridge",
+				"iowaridgeglm"
+			],
+			[
+				"dis",
+				"distances_compare"
+			],
+			[
+				"Q_H",
+				"Q_H"
+			],
+			[
+				"featu",
+				"featureImportances"
+			],
+			[
+				"predic",
+				"predictedYB"
+			],
+			[
+				"lasso",
+				"lassoCV"
+			],
+			[
+				"trainAndPre",
+				"trainAndPredictRF"
+			],
+			[
+				"predict",
+				"predictTrain"
+			],
+			[
+				"n",
+				"n"
+			],
+			[
+				"m",
+				"m"
+			],
+			[
+				"scaled",
+				"scaledProbeA"
+			],
+			[
+				"pred",
+				"predict_proba"
+			],
+			[
+				"y_",
+				"y_test"
+			],
+			[
+				"y",
+				"y_train"
+			],
+			[
+				"vis",
+				"visualize_classification_performance"
+			],
+			[
+				"sampl",
+				"sample_size"
+			],
+			[
+				"acc",
+				"accuracy_score"
+			],
+			[
+				"predicti",
+				"predictions_train"
+			],
+			[
+				"elec",
+				"elecSurplus"
+			],
+			[
+				"combine",
+				"combinedDataEurope"
+			],
+			[
+				"worldMap",
+				"worldMapCountries"
+			],
+			[
+				"ele",
+				"electricityConPC"
+			],
+			[
+				"electr",
+				"electricityGenPC"
+			],
+			[
+				"combined",
+				"combinedData"
+			],
+			[
+				"energy",
+				"energyUse"
+			],
+			[
+				"contin",
+				"continentData"
+			],
+			[
+				"combin",
+				"combinedData"
+			],
+			[
+				"en",
+				"eneryProd"
+			],
+			[
+				"avera",
+				"averagedata"
+			],
+			[
+				"aver",
+				"averageplot"
+			],
+			[
+				"SpeedDa",
+				"SpeedData"
+			],
+			[
+				"majority",
+				"majorityelement"
+			],
+			[
+				"xt",
+				"xtmean2"
+			],
+			[
+				"len",
+				"length"
+			],
+			[
+				"bubbl",
+				"bubbllintre"
+			],
+			[
+				"Speed",
+				"SpeedRawData"
+			],
+			[
+				"Spee",
+				"SpeedRawData"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					""
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Traditional"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"PdfLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"XeLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"LuaLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - PdfLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - XeLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - LuaLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Script Builder"
+				]
+			],
+			[
+				"Packages/LaTeXTools/LaTeX.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				]
+			],
+			[
+				"Packages/Python/Python.sublime-build",
+				"Syntax Check"
+			]
+		],
+		[
+			[
+				[
+					"Packages/knitr/knitr-Markdown.sublime-build",
+					""
+				],
+				[
+					"Packages/knitr/knitr-Markdown.sublime-build",
+					"Run"
+				]
+			],
+			[
+				"Packages/knitr/knitr-Markdown.sublime-build",
+				"Run"
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"remove ",
+				"Package Control: Remove Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"list pa",
+				"Package Control: List Packages"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"push",
+				"Git: Push"
+			],
+			[
+				"comm",
+				"Git: Commit"
+			],
+			[
+				"git add",
+				"Git: Add..."
+			],
+			[
+				"git res",
+				"Git: Reset (unstage) All"
+			],
+			[
+				"git p",
+				"Git: Pull"
+			],
+			[
+				"package",
+				"Package Control: List Packages"
+			],
+			[
+				"add",
+				"Git: Add..."
+			],
+			[
+				"amend",
+				"Git: Amend Commit"
+			],
+			[
+				"com",
+				"Git: Commit"
+			],
+			[
+				"pul",
+				"Git: Pull"
+			],
+			[
+				"pus",
+				"Git: Push"
+			],
+			[
+				"ame",
+				"Git: Amend Commit"
+			],
+			[
+				"pull",
+				"Git: Pull"
+			],
+			[
+				"git comm",
+				"Git: Commit"
+			],
+			[
+				"git pul",
+				"Git: Pull"
+			],
+			[
+				"custom",
+				"Git: Custom Command"
+			],
+			[
+				"ad",
+				"Git: Add..."
+			],
+			[
+				"commi",
+				"Git: Commit"
+			],
+			[
+				"stat",
+				"Git: Status"
+			],
+			[
+				"statu",
+				"Git: Status"
+			],
+			[
+				"git a",
+				"Git: Add..."
+			],
+			[
+				"pu",
+				"Git: Pull"
+			],
+			[
+				"git add.",
+				"Git: Add..."
+			],
+			[
+				"git",
+				"Git: Track Remote Branch"
+			],
+			[
+				"git ",
+				"Git: Pull"
+			],
+			[
+				"git custom",
+				"Git: Custom Command"
+			],
+			[
+				"ins",
+				"Package Control: Install Package"
+			],
+			[
+				"remo",
+				"Package Control: Remove Package"
+			],
+			[
+				"packa",
+				"Package Control: List Packages"
+			],
+			[
+				"git cus",
+				"Git: Custom Command"
+			],
+			[
+				"disa",
+				"Package Control: Disable Package"
+			],
+			[
+				"theme",
+				"UI: Select Color Scheme"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"install p",
+				"Package Control: Install Package"
+			],
+			[
+				"ga",
+				"Git: Add..."
+			],
+			[
+				"git commit",
+				"Git: Commit"
+			],
+			[
+				"commit",
+				"Git: Commit"
+			],
+			[
+				"da ui",
+				"DA UI: Select Skin"
+			],
+			[
+				"da",
+				"DA UI: Select Accent"
+			],
+			[
+				"",
+				"View: Toggle Side Bar"
+			],
+			[
+				"arit",
+				"Arithmetic"
+			],
+			[
+				"termin",
+				"Terminus: List Shells"
+			],
+			[
+				"git ad ",
+				"Git: Add..."
+			],
+			[
+				"terminus",
+				"Terminus: List Shells"
+			],
+			[
+				"lsp",
+				"LSP: Disable Language Server Globally"
+			],
+			[
+				"packages",
+				"Package Control: List Packages"
+			],
+			[
+				"acce",
+				"DA UI: Select Accent"
+			],
+			[
+				"colo",
+				"DA UI: Color Scheme Settings"
+			],
+			[
+				"package res",
+				"PackageResourceViewer: Open Resource"
+			],
+			[
+				"remov",
+				"Package Control: Remove Package"
+			],
+			[
+				"packagere",
+				"PackageResourceViewer: Open Resource"
+			],
+			[
+				"termi",
+				"Terminus: List Shells"
+			],
+			[
+				"Snippet: ",
+				"Snippet: Method"
+			],
+			[
+				"git stat",
+				"Git: Status"
+			],
+			[
+				"term",
+				"Terminus: List Shells"
+			],
+			[
+				"remove pack",
+				"Package Control: Remove Package"
+			],
+			[
+				"git push",
+				"Git: Push"
+			],
+			[
+				"r-",
+				"R-IDE: Extract Function"
+			],
+			[
+				"knitr",
+				"knitr: Move to Next Chunk"
+			],
+			[
+				"satisfy",
+				"Package Control: Satisfy Dependencies"
+			],
+			[
+				"preferences terminus",
+				"Preferences: Terminus Key Bindings"
+			],
+			[
+				"enable ser",
+				"LSP: Enable Language Server Globally"
+			],
+			[
+				"enable lan",
+				"LSP: Enable Language Server Globally"
+			],
+			[
+				"pvr",
+				"PackageResourceViewer: Open Resource"
+			],
+			[
+				"prv",
+				"PackageResourceViewer: Open Resource"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"latex",
+				"LaTeXTools: Jump to PDF"
+			],
+			[
+				"brack",
+				"BracketHighlighter: Settings"
+			],
+			[
+				"add ch",
+				"Package Control: Add Channel"
+			],
+			[
+				"in",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 247.0,
+		"history":
+		[
+			"unset PYTHONPATH",
+			"echo $PYTHONPATH",
+			"which python"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet"
+	],
+	"file_history":
+	[
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/.gitignore",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/report1600779.rmd",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/references.bib",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/1600779.rmd",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/technicalappendix.rmd",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/technicalappendix.pdf",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/custom/food_group_descriptors.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/technicalappendix.bib",
+		"/Users/harrisonwilde/Downloads/Visualisations.rmd",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/custom/region_names.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/custom/nutrient_categories.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/custom/7945_ref_food_groups_descriptors.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1974_household_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1974_diary_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_nfs_nutrient_conversion_factors_table_field_descriptions.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/created/nutrient_categories.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1980_household_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_dcv_occ_occhoh_occupation_class_with_unpacked_descriptions.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1974_nutrient_conversion_factors_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/ST344-Group-Project/Final Report/Appendix and Bibliography/Final Technical Appendix.rmd",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1975_nutrient_conversion_factors_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1976_nutrient_conversion_factors_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_nutgp.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_nfs_timeline.pdf",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_food_groups.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1989_household_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1989_diary_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/txt/1988_visitor_data.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/UKDA_Study_7945_Information.htm",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_dcv_vegetarian_indicator.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_food_categories.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_minfd_minor_food_codes.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/generate.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet OLD/training.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet OLD/main.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/config.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/conversion.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/train.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet copy/mood.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/mood.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/util.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/dataset.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet OLD 2/train.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet OLD 2/main.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_food_groups_descriptors.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_food_groups_u1600779.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_major-food_group_mapping.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_major-category_mapping.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_minor_and_major_foods.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_major_food_codes.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/data/info/7945_ref_food_groups_standard.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet OLD 2/Progress Report/Progress Report.rmd",
+		"/Users/harrisonwilde/Downloads/deprivation-by-postcode.csv",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/ST344 Professional Practice of Data Analysis/Individual Coursework/National Food Survey/report.rmd",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple-sru/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJmaster/generate.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJmaster/constants.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJmaster/train.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJmaster/dataset.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJmaster/perplexity.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet OLD 2/dataset.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/mood_utils.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Sentiment Analysis/utils.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple/dataset.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple/midi_io.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple/train.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Wilde/train.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Wilde/util.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/lambda.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Wilde/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet OLD/data.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJmaster/util.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJmaster/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple-sru/train.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple-style/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJprof-force/model.py",
+		"/miniconda2/envs/three/lib/python3.6/site-packages/zope/interface/declarations.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJvaebaseline/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJprof-force/constants.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple/constants.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple-sru/constants.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple-style/constants.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJvaebaseline/constants.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJmaster/lambda.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/main.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple-sru/generate.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple-style/train.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/Testing/DeepJsimple-style/generate.py",
+		"/Users/harrisonwilde/.bash_profile",
+		"/Users/harrisonwilde/.conda/environments.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/util.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/midi_util.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/out/model.h5",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/dataset.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/train.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/midi_util.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS356 Approximation and Randomised Algorithms/Assignment 2/assignment2.rmd",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS356 Approximation and Randomised Algorithms/Assignment 1/assignment1.rmd",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/constants.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/distribution.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/generate.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/test.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/distribution.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y2/CS258/Assignment.java",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y2/CS261/chatbot/recast_tornado.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/constants.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Labs/Lab 2/Lab2_solutions/linReg.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Labs/Lab 3/Lab3_solutions/infoGain.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Assignment 1/assignmentone-u1600779/u1600779_assignment/predictTNA.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Assignment 2/u1600779/training_functions.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Assignment 2/u1600779/rfcfeatures.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Assignment 2/u1600779/cnn.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Assignment 1/assignmentone-u1600779/u1600779_assignment/predictClass.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Labs/Lab 2/Lab2_solutions/kFoldCV.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/CS342 Machine Learning/Labs/Lab 1/Lab1_solutions/functionIntro.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet OLD/model.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/visualize.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/requirements.txt",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/test.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/visualize.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/training.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/DeepJ/scripts/cuda.sh",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/WildeNet/data.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/RNNThing/midi_to_statematrix.py",
+		"/Users/harrisonwilde/Library/Mobile Documents/com~apple~CloudDocs/University/Y3/Dissertation/RNNThing/model.py"
+	],
+	"find":
+	{
+		"height": 32.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 32.0
+	},
+	"input":
+	{
+		"height": 56.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.SublimeLinter":
+	{
+		"height": 0.0
+	},
+	"output.Terminus":
+	{
+		"height": 160.0
+	},
+	"output.diagnostics":
+	{
+		"height": 112.0
+	},
+	"output.exec":
+	{
+		"height": 169.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git":
+	{
+		"height": 144.0
+	},
+	"output.latextools":
+	{
+		"height": 40.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 112.0
+	},
+	"pinned_build_system": "Packages/R-IDE/support/R Markdown.sublime-build",
+	"project": "diss.sublime-project",
+	"replace":
+	{
+		"height": 60.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"lab repor",
+				"Y3/ST344 Professional Practice of Data Analysis/LabReport5/LabReport5.rmd"
+			],
+			[
+				"labrepor",
+				"Y3/ST344 Professional Practice of Data Analysis/LabReport5/LabReport5.rmd"
+			],
+			[
+				"spec",
+				"Year 3/Dissertation/Specification/Specification.rmd"
+			],
+			[
+				"",
+				"Package Control Messages"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 391.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

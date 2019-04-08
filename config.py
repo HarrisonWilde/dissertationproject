@@ -1,43 +1,35 @@
-### MIDI Parameters ###
+# Representation details, MIDI characteristics to capture
 MIDI_VELOCITY = 128
-# Number of possible notes
-NUM_NOTES = 128
-# Number of time shift quantizations
-TIME_QUANTIZATION = 32
-# Exponential representation of time shifts
+NOTE_RANGE = 128
+# Use bins to quantise values
+TIME_BINS = 32
+VELOCITY_BINS = 32
+
+TIME_OFFSET = NOTE_RANGE
+VELOCITY_OFFSET = TIME_OFFSET + TIME_BINS
+FULL_RANGE = VELOCITY_OFFSET + VELOCITY_BINS
+
+# Time representation details, MIDI tick
 TICK_EXP = 1.14
 TICK_MUL = 1
 # The number of ticks represented in each bin
-TICK_BINS = [int(TICK_EXP ** x + TICK_MUL * x) for x in range(TIME_QUANTIZATION)]
-# Ticks per second
+TICK_BINS = [int(TICK_EXP ** x + TICK_MUL * x) for x in range(TIME_BINS)]
 TICKS_PER_SEC = 100
-# Number of velocity buns
-VEL_QUANTIZATION = 32
 
-NOTE_ON_OFFSET = 0
-TIME_OFFSET = NOTE_ON_OFFSET + NUM_NOTES
-VEL_OFFSET = TIME_OFFSET + TIME_QUANTIZATION
-NUM_ACTIONS = VEL_OFFSET + VEL_QUANTIZATION
-
-# Trainin Parameters
-SEQ_LEN = 1024 + 1
+# Model train parameters
+SEQ_LEN = 1025
 GRADIENT_CLIP = 10
 SCALE_FACTOR = 2 ** 10
+
 # The number of train generator cycles per sequence
 TRAIN_CYCLES = 250
 VAL_CYCLES = int(TRAIN_CYCLES * 0.2)
 
-# Mood
-NUM_MOODS = 6
-
-# Paths
+# Directories
 AUDIO_DIR = '../Audio2.nosync'
-MOOD_DIR = 'data/mood'
-MIDI_DIR = 'data/midi'
-OUT_DIR = 'out'
 CACHE_DIR = 'out/cache'
+GRAPHS_DIR = 'out/graphs'
+MIDI_DIR = 'data/midi'
+MODELS_DIR = 'out/models'
+MOOD_DIR = 'data/mood'
 SAMPLES_DIR = 'out/samples'
-
-settings = {
-    'force_cpu': False
-}

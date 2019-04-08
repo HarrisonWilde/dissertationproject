@@ -1,16 +1,19 @@
+import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+
 import config
 from util import *
-import numpy as np
+
 
 class WildeNet(nn.Module):
     """
     The WildeNet architecture.
     """
-    def __init__(self, num_units=512, num_layers=4, mood_units=32):
+    def __init__(self, num_units=2048, num_layers=4, mood_units=64):
         super().__init__()
         self.num_units = num_units
         self.num_layers = num_layers
@@ -18,19 +21,18 @@ class WildeNet(nn.Module):
 
         # RNN
         self.rnns = [
-            nn.GRU(config.NUM_ACTIONS + mood_units, num_units, 2, batch_first=True) if i == 0 else
-            DilatedRNN(nn.GRU(num_units, num_units, batch_first=True), 2 ** i) if i < 2 else
-            DilatedRNN(nn.LSTM(num_units, num_units, batch_first=True), 2 ** i)
-            for i in range(num_layers)
+            nn.GRU(config.FULL_RANGE + mood_units, int(self.num_units / 2), batch_first=True) if i == 0 else
+            DilatedRNN(nn.GRU(int(self.num_units / (2 ** i)), int(self.num_units / (2 ** (i + 1))), batch_first=True), 2 ** i)
+            for i in range(self.num_layers)
         ]
 
-        self.output_linear = nn.Linear(self.num_units, config.NUM_ACTIONS)
+        self.output_linear = nn.Linear(int(self.num_units / (2 ** self.num_layers)), config.FULL_RANGE)
 
         for i, rnn in enumerate(self.rnns):
-            self.add_module('rnn_' + str(i), rnn)
+            self.add_module('dgru' + str(i), rnn)
 
-        # Style
-        self.mood_linear = nn.Linear(config.NUM_MOODS, self.mood_units)
+        # Mood 192 output, 6 corresponds to the number of mood params
+        self.mood_linear = nn.Linear(6, self.mood_units)
         # self.mood_layer = nn.Linear(self.mood_units, self.num_units * self.num_layers)
 
     def forward(self, x, mood, states=None):
@@ -48,11 +50,7 @@ class WildeNet(nn.Module):
             states = [None for _ in range(self.num_layers)]
 
         for l, rnn in enumerate(self.rnns):
-            prev_x = x
             x, states[l] = rnn(x, states[l])
-
-            if l > 0:
-                x = prev_x + x
 
         x = self.output_linear(x)
         return x, states
@@ -61,13 +59,17 @@ class WildeNet(nn.Module):
         """ Returns the probability of outputs """
         x, states = self.forward(x, mood, states)
         seq_len = x.size(1)
-        x = x.view(-1, config.NUM_ACTIONS)
+        x = x.view(-1, config.FULL_RANGE)
         x = F.softmax(x / temperature, dim=1)
-        x = x.view(-1, seq_len, config.NUM_ACTIONS)
+        x = x.view(-1, seq_len, config.FULL_RANGE)
         return x, states
 
+
 class DilatedRNN(nn.Module):
-    """ https://arxiv.org/pdf/1710.02224.pdf """
+    """
+    DRNN Module, to wrap around a recurrent unit of some description and provide recurrent skip connections
+    https://arxiv.org/pdf/1710.02224.pdf
+    """
     def __init__(self, wrap_rnn, dilation=1):
         """
         Args:
@@ -105,7 +107,7 @@ class DilatedRNN(nn.Module):
         x = x.permute(0, 3, 1, 2)
         x = x.contiguous().view(batch_size * self.dilation, seq_len // self.dilation, -1)
         x, states = self.rnn(x, states)
-        # X is now [batch * dilation, seq_len//dilation, features]
+        # X is now [batch * dilation, seq_len // dilation, features]
         # We want to restore it back into [batch, seq_len, features]
         # But we can't simply reshape it, because that messes up the order.
         x = x.contiguous().view(batch_size, self.dilation, seq_len // self.dilation, -1)

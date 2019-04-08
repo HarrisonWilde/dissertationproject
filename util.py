@@ -1,10 +1,12 @@
 import os
 import numpy as np
+from collections import defaultdict
+
 import torch
 from torch.autograd import Variable
+
 from config import *
 import sys
-from collections import defaultdict
 
 def copy_in_params(net, params):
     """ Copies the tensor data from params to net """
@@ -111,7 +113,7 @@ def seconds_to_events(seconds):
             break
 
         evt_index = TIME_OFFSET + tick_bin
-        assert evt_index >= TIME_OFFSET and evt_index < VEL_OFFSET, (standard_ticks, tick_bin)
+        assert evt_index >= TIME_OFFSET and evt_index < VELOCITY_OFFSET, (standard_ticks, tick_bin)
         yield evt_index
         standard_ticks -= TICK_BINS[tick_bin]
 
@@ -182,7 +184,7 @@ def var(tensor, **kwargs):
     """
     Creates a Torch variable based on CUDA settings.
     """
-    if torch.cuda.is_available() and not kwargs.get('use_cpu', False) and not settings['force_cpu']:
+    if torch.cuda.is_available() and not kwargs.get('use_cpu', False):
         return Variable(tensor, **kwargs).cuda()
     else:
         return Variable(tensor, **kwargs)

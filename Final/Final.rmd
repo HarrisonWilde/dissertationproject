@@ -1,0 +1,343 @@
+---
+output:
+  pdf_document:
+    includes:
+      in_header: init.sty
+      before_body: title.sty
+    number_sections: true
+    toc_depth: 3
+    keep_tex: true
+bibliography: "Final.bib"
+link-citations: yes
+csl: ieee.csl
+fontsize: 12pt
+linkcolor: red
+urlcolor: red
+keywords: "Recurrent Neural Networks, Machine Learning, Data Science, Probabilistic Sequence Generation, Sentiment Analysis"
+---
+
+# Introduction
+
+It is written with regards to the undertaken project exploring the possibilities of musical composition based upon perceived mood of an input and a library of examples with which a compositional engine is to be trained. The main focusses of the project remain on composition as this is the most interesting and challenging component; meaningful contributions to this area would be the most desirable outcome of the project. Given an input from the user, whether it be an image or some text, the main goal is to have a system which will output music to match the perceived sentiment of this input.
+
+This will hopefully lead to the creation of an interactive web application for a user to upload something and receive a composition in return which 'matches' whatever inspiration they provide to the compositional engine. The specification document laid out a number of questions to be answered regarding how this composition should be achieved, a task which has multiple components spanning:
+
+- **A means of transcription.** This must be decided upon to encode input and output data for the compositional engine. The main choices to consider were either raw audio data or MIDI data. This decision was a critical one as not only does it influence the choice of approach for composition, but it also dictates the output of the system: training a model with MIDI data means that it is somewhat limited to responding with MIDI itself. This has led to the consideration of one of the [extensions mentioned below](#synthesiserparameters).
+- **A means of composing musical pieces based on sentimental input data from a user alongside training data**; this question is heavily influenced by the answer to the one posed above. The main approaches to consider were a more classical and simple approach involving Markov Chains and stochastic state spaces, in comparison with a very modern and active research subject in composition using Neural Networks.
+
+The project has broadened in scope in some ways with respect to the initial specification, whilst narrowing in others. Namely, constraints on the style of output have been relaxed due to potential issues with creating effective training sets; it remains unclear as to whether ambient is one of the hardest genres of music to compose (a lack of rhythmic elements being a major factor in this theory as they are likely to be the easiest elements to generate) or one of the easiest (less emphasis on continuity and coherence to be maintained throughout allows for more abstract output from the compositional engine which is a possibility).
+
+## Motivation
+
+Since recurrent neural networks rose to prominence in the 1990s. Deep learning has shown great promise in the task of completely automatic musical composition. This is a complex task exploring some challenging computational and philosophical questions in terms of how the "rules" of music might be correctly encapsulated in order to compose musical pieces to eventually compete with what has always been an almost exclusively human process.
+
+There would be contention in explicitly defining rules for something as complex and subjective as music; this is where deep learning's relative impartiality comes in and has already proved effective on a number of previously inaccessible tasks where patterns were not thought to be present, or at least were difficult to capture due to the tasks often being very human in nature.
+
+It is here that the motivation for the project lies. Others have been attempting for decades and this project hopes to contribute to that path of exploration, assessing and utilising a variety of techniques in the hope of replicating at least part of the process of composition. In order to do this assumptions must be made in terms of which parts of human behaviour the model is to imitate.
+
+Ambient music would be used primarily because BLAH
+
+### Brief History of Computational and Algorithmic Approaches to Composition and Musical Applications
+
+Algorithmic composition has developed rapidly in recent years alongside the increase in popularity of deep learning techniques. However, the task and potential solutions pre-date deep learning entirely:
+
+- Markov chains were first formalised in the 1900s and were used to string together segments of score or individual musical notes based on a set of transition probabilities to probabilistically generate sequences of music following conditioning. This conditioning could take place using pre-existing musical score and naturally the outputs tend to follow the inputs closely in terms of style. Iannis Xenakis was a big fan REFERENCE
+- Recurrent Neural Networks attempt to extend beyond the main limitations of Markov Chains regarding their restriction to only reproducing subsequences of the original pieces that are used to condition them. These techniques first rose to prominence in the 1980s. The first attempts were usually limited by their lack of coherence beyond a small neighbourhood of notes; the outputs would often lack any real structure or explode into chaos or vanish into silence.
+- In the early 2000s, some improvements on RNNs which aimed to solve some of the aforementioned issues were first applied to composition. The first attempt was made by Doug Eck in 2002 [@eck2002finding] and utilised LSTMs.
+- Doug now leads the Magenta team at Google Brain [@magenta] who have created a myriad of models mainly focussing on assisted accompaniment for musicians or improvisation with a user. They have continued to apply LSTMs to these problems as well as variations on the Transformer (a sequence model based on self-attention) pioneered by Huang et al. in 2018 [@huang2018improved].
+- The field has fragmented in recent years as teams such as Magenta focus more heavily on interaction with a user. Another fragment is focussing on raw audio over MIDI or character representations as has been the standard for decades. The raw audio approach has huge requirements in terms of data and training time making it still somewhat inaccessible for the time being. Although notable research has been carried out by Google again at their Deepmind front via WaveNet [@wavenet]. Other, less creatively focused applications have begun to take hold as well especially within the field of speech synthesis.
+
+There is further discussion to this history if the reader is inclined [@mediumkylemcdonald; @libdlmusic]. The above points cover the main and most relevant milestones and aims to provide some historical context to the starting point of this project.
+
+## Research Objectives
+
+Generative probabilistic models such as recurrent neural networks and their many improvements and variations were the main subject of exploration through research. As well as some perhaps simpler interpretations of the above name like Markov chains and fields. Development of a novel architecture which can compete with existing solutions and better them in as many areas as possible is desirable.
+
+The method is inspired by numerous existing works and recent advances in many fields which reveal that deep learning is increasingly effective when the correct data is present. Formulating and utilising an appropriate data set is therefore of the utmost importance.
+
+The goal of this project is to build a versatile model whose outputs are at best indistinguishable from that of a human and at worst impressive in terms of their structure and harmonic coherence.
+
+## Eventual Objectives and Project Requirements
+
+The main goal 
+
+
+
+# Background
+
+## Recurrent Neural Networks and Their Variants
+
+### Recurrent Neural Network Justifications and Definitions
+
+Perhaps the most common form of artificial neural network is the *feedforward* network which utilise connected layers of neurons and activation functions to approximate different functions through the learning of parameters and weights. Their main limitation in this context is that they require their inputs to be of a fixed dimension and thus are not well suited to dynamic data of varying size such as a sequence $(x_i)_{1\le i\le T}$ of time stepped note states representing a composition where $T$ is the length of the piece.
+
+It is assumed that this type of sequential data has some system of dependence on its prior and potentially future elements and so it would not be appropriate to simply input each element of a temporal sequence into a feedforward network during training. It can clearly be seen by observing musical data and considering knowledge of musical harmony (songs are often in a certain and consistent key which may be inferred by chords and notes present throughout the piece) that the input at each time step is likely to be dependent on other time steps.
+
+This class of situations led to the development of **Recurrent Neural Networks** which introduce recurrent connections between layers over a temporal dimension allowing the network to exhibit dynamic behaviour in this dimension.
+
+It is now possible to provide some notation specific to this project regarding RNNs. A sequence of inputs is defined as above, with the vector corresponding to the sequence at time $i$ denoted as $x_i\in \{0,1\}^{D_{\text{input}}}$. 
+
+At the start of the process all weights and activations are initialised to some value. At each time step following this the new activations for each hidden layer are calculated using a combination of the current time steps input and the previous activations. This process highlights the possibility of unrolling of an RNN into a feedforward network or DAG representation as shown in the figure below.
+
+![Recurrent connections between the hidden layers of a network](Images/rnnrolled.png)
+
+![Identical to the previous figure but with the recurrent connections unrolled along the time axis](Images/rnnunrolled.png)
+
+The most important property of this class of network is their *time invariance*, in that at a given time step the networks activations and learned properties can all be considered relative to previous time steps. The activations at one time step influence the next. The ability to recurrently input into the network is the clear reason for its usage in this context over traditional feedforward networks.
+
+Despite this time invariance and flexibility in terms of the dimension of their inputs, they lack long term coherence meaning they often fail when complex dependencies are built up and different temporal structures must be captured. They are susceptible to exploding or vanishing gradients over time due to repeated and recurrent backpropagation, i.e. tiny values will often compound and be multiplied together leading to the network getting stuck or significantly slowing its learning. These issues have inspired a number of variants aiming to mitigate these problems and form the basis of most current approaches to musical composition. They are discussed in the sections below.
+
+### LSTMs
+
+### GRUs
+
+## Dilation
+
+The concept of dilation was first proposed in the context of convolutional neural networks [@yu2015multi] for image analysis and semantic segmentation; this work was discovered during research for a [potential extension](#sentimentfromimages) of this project. The main concept is to aggregate information at different contextual scalings without losing resolution by exploding a kernel's considered neighbourhood around a central pixel / element. This is done to increase the likelihood of discovering pattern structures at different resolutions within an input as well as increasing the area of an image or input which can be considered through a small number of steps.
+
+It offers an alternative to other techniques often relying on down-sampling which sacrifice resolution rather than considering different contexts at full resolution as is the case with dilation.
+
+![Different dilation factors (represented by the value of D) illustrated on a 2-dimensional input](Images/dilationconv2.png)
+
+This technique has shown to be very effective in aiding dense prediction problems (predicting labels for each pixel in an image, or with respect to this project's proposed equivalence of predicting on or off states for each note on the piano over a series of time steps). Deepmind researchers applied a similar approach within their own convolutional network for WaveNet which is the first documented use of dilation in the musical composition domain [@oord2016wavenet]. Their results found that again the addition of dilation conceptually increased the accuracy and effectiveness of their model.
+
+A paper was published linking this concept with recurrent neural networks in 2017 by Chang et al. [@chang2017dilated]. This paper forms the basis for the justification of using dilation in the model present in this project; this project's compositional model is potentially the first use of dilated recurrent neural networks in the musical composition domain.
+
+![An example of a three-layer DRNN with dilation factors 1, 2, and 4](Images/dilationrnn.png)
+
+
+## Bi-Axial Architectures
+
+
+
+
+
+
+5. Image processing has some parallels to my approach as well. I wanted to introduce more concepts of relativity into my model over absolute structures beyond just the time thing; many existing solutions include networks where each note corresponds to a specific node. However, music is more of a relative set of rules in that pieces can be transposed up or down in key and you can always construct chords and melodies relative to that key. So I wanted my network to be able to capture this understanding rather than just being able to copy certain chords it learns; this way it can perform in a more varied and realistic way. Image processing has a similar idea already in which a kernel is used to take a neighbourhood of pixels in an image and carry out some transformation on them. My idea was to do this with an octave above and below each note, feeding this neighbourhood into its own network which would then focus only on the relative position of notes to learn harmonic structure without worrying which note was actually being played.
+
+
+## Related Work
+
+### Competitive Existing Solutions
+
+In terms of a symbolic approach (something that was not considered due to lack of training data, using musical scoring in terms of sheet music, lettering representing notes), one of the most impressive was undertaken by Sturm et al. from the KTH Royal Institute of Technology and Kingston University in producing a full album with trained musicians and having it reviewed without revealing the nature of its composition. This is a very effective but resource intensive means of qualitative assessment as well as an effective example of a Turing Test for computational composition tasks. 
+
+Following on from the questions posed in the Specification, a great deal of research has been carried out in order to better define the associated objectives. Resolutions to most of these questions have been reached following testing or further research, and implementations have been attempted where appropriate in order to properly compare the options outlined previously. Balance in terms of resources required and complexity of the task were the main considerations throughout this process, leading to a realistic but challenging set of goals for the future.
+
+### Transcription and Encoding Techniques
+
+The first objective in the composition section of the Specification stated that a decision must be made regarding the format of data used to train the eventual compositional engine. The goal is to build a large library of this data with enough engineered features for the model to successfully produce meaningful output. It has become clear that the use of raw audio data involves a much larger computational overhead making it an infeasible approach given the time-scale of this project. This decision will be discussed at greater length [in the appropriate section](#neuralnetworkapproach); in terms of encoding input data, the decision is mainly based upon the large body of existing research behind MIDI transcription and the intuitiveness of features which arise from relatively simple data such as this. Characteristics such as tempo can be extracted easily and used to train a model on the fundamental 'rules' of music, from which the model can then learn to improvise and compose within certain constraints.
+
+Ableton (a company at the forefront of digital audio technology) employee Anna Wszeborowska spoke at EuroPython 2016 on the applications of Python in encoding from raw audio data to MIDI [@annaw]. Indeed, an implementation to this end has been partially completed, producing some interesting results. Google Brain's Magenta was heralded in the specification as one of the more promising existing tools: a TensorFlow sub-package focussing on musical composition, transcription and other artistic endeavours. The 'Onset Frames' model [@magentaonsetframes] from Magenta's library of pre-trained models uses Neural Networks to transcribe piano pieces to MIDI, and also works reasonably well in transcribing other forms of music.
+
+Cross-validation between this model's output and a method of encoding raw audio to MIDI implemented in Python will be attempted as both approaches have shown themselves to be successful; often one is better than the other depending on the structure of the source. 'Onset Frames' is clearly optimal in the situations it was designed for, whilst implementations attempted in Python give mixed results that are more consistent across different styles of music. The biggest challenges encountered in this part of the project are complex sequences of chords and polyphony in the input from different instruments and vocals. Both of the above techniques can deal with these challenges, but with a slightly lower accuracy than quick successions of monophonic notes for example.
+
+Another option which is yet to be considered is the use of Convolutional Neural Networks. These have been applied extensively in the past to the task of musical transcription [@bereketai; @mbereket; @sigtia2016end] with state-of-the-art results at their resolutions. It is likely that as the project progresses, work on applying this existing research and exploration into the possibilities of other models will continue and be refined to best match the desired output of training data to be used as inputs for the compositional engine. This process exemplifies one of the largest challenges and complexities in this project: using machine learning to *generate* the data used to then compose music in a similar way introduces a lot of uncertainty and dependence between these two components.
+
+### Data
+
+All of the approaches to transcription are impractical to a certain extent following on from the concerns regarding time requirements and uncertainty made above; it is for this reason that some large MIDI data libraries such as the Lakh dataset [@lakh] and Metacreation's corpus [@metacreation] could still be fallen back on if time becomes too constrictive. The existence of such datasets allows for work on the compositional engine to begin without delay, but ideally one of the approaches above will eventually lead to the creation of a similar dataset to be utilised in more intricate feature engineering as well as being a more relevant dataset to the genres of music which comprise the initial focus of this project. The MAESTRO Data Set of MIDI corresponding to piano transcriptions [@maestro2018] is used by Magenta to train their Onset Frames model and so could also form part of the training data for the project.
+
+MIDI is easy to work with and clear in its structure, especially when compared to the complexities of raw audio waveform data. However, there is still the matter of actually using this data to train a model; for this TensorFlow already has a technique for converting MIDI to so-called 'Note Sequences' [@notesequences] which define all the characteristics of a MIDI file in a Pythonic format. This conversion is painless and allows for more standard feature engineering and manipulation techniques to be done inside of Python using familiar packages.
+
+<!-- Million Song Data Set [@Bertin-Mahieux2011] -->
+
+## Composition
+
+### Markovian Approach
+
+This approach involved implementing a learned state-space based upon interpolations of a series of MIDI files. Markov chains could then be implemented to traverse this state-space and sequentially generate new MIDI, building compositions from probabilistic sequences of notes. The idea was to have an 'improvisational' algorithm which could stochastically traverse common progressions and chords, incorporating the ability to switch between these sequences and build a more complex overall piece. Initial work on this approach provided a clear-cut first step to the project as it did not require a huge amount of prior work due to familiarity with the mechanisms and concepts behind it, as well as the existence of other attempts at Markovian composition [@markovcomposer].
+
+The ease of this approach also summarises its main disadvantage: there is a noticeable lack of complexity and novelty in the pieces composed. By its nature, most of the states which the composer can traverse are directly influenced by the input data and thus often lead to sections which are identical to one of the inputs. This could be attributed to a lack of training data, though using more lead to increasingly small transition probabilities and a descent into near randomness, losing a lot of the musicality present in previous outputs along the way.
+
+It is unlikely that this approach will be revisited and although some output was generated, it was not particularly impressive and certainly pales in comparison to some of the witnessed outputs generated by other techniques. It is for this reason that the second of the big objective questions in the Specification could be answered, concluding that Neural Networks should be used for composition rather than Markov Chains.
+
+### Neural Network Approach
+
+These are recurrent neural networks which most importantly for my application have the property of time invariance, in that at a given time step the networks activations and learned properties can all be considered relative to previous time states. The outputs at one time step become inputs for the next and we can use this to sequentially train and generate music without worrying about specific locations or times within the network. To offer a counter example that might make this clearer I would imagine a network composed of a fixed sequence of layers which are visited once and then output to the next layer, dealing with absolute positions would make this kind of network unsuitable for musical composition.
+
+Neural Networks are undoubtedly a very active area of research; a lot of which is relevant or could even be directly applied to this project. For example, "How we Made Music Using Neural Networks" [@alextavgen] references an article by Andrej Karpathy (Tesla's Director of AI); both of these pieces together formulate a good introduction to the technologies to be implemented for a large portion of the remainder of this project. The Karpathy article [@karpathy] showcases some of the capabilities of Recurrent Neural Networks working on generating code, text and images. Music is considered to be a more challenging feat for these systems, which is perhaps intuitive given its continuous and often chaotic nature. The former of the two articles discusses a short exploration into this challenge, a challenge which this project will go further in trying to tackle.
+
+Google's Magenta project was mentioned as one of the main leads for composition in the specification and remains so at this point in the project. Magenta's collection of pre-trained models is testament to the promise of this platform; more specifically there are pre-trained models available which produce improvisation, polyphony and interpolation of input pieces [@magentavae; @magentapolyphony]. The aim of this project is to build and train a model sitting somewhere between these existing ones, one which is capable of generating inspired sequences of chords and notes and then recurrently feeding these generations back into itself in order to emulate improvisation.
+
+Based on Magenta's current capabilities, an improvisational RNN [@magentaimprov] combined with an LSTM net to improvise off interpolations between existing sources would introduce enough variance and novelty to achieve the goals set for the compositional engine. Preliminary experiments and tests with the models are satisfactory for this application; there are a plethora of provided Jupyter Notebooks to test out the models and interaction is also possible through a command line interface. RNNs are likely to suffer with a lack of global structure, but work well in terms of identifying characteristics of an input and continuing to improvise, in this case. An LSTM would be able to maintain awareness of musical features such as bars, phrases and tempo which should lead to a more acceptable musical output. Hidden layer activations could be used in an RNN to 'remember' what it is doing and where it may be in a musical phrase. However, it is yet to be seen how effective this memory will be in practice.
+
+Considering the work done by Magenta's team and prior explorations into the field by other researchers leads to the conclusion that Neural Networks show more promise for composition than the Markovian approach. This choice links back into the choices made for the format of data to be used to train the models. There are Neural Network based systems which generate MIDI such as Magenta and DeepJazz [@deepjazz], in contrast to some which instead generate raw audio waveforms such as WaveNet, GRUV and SampleRNN [@oord2016wavenet; @Nayebi2015GRUVA; @mehri2016samplernn]. As mentioned previously, using raw audio would be infeasible in a project of this scale and so a lot of the tools and options for composition with Neural Networks could immediately be discarded. The outputs from these other approaches were often more abstract as they were not limited to standard musical notation enforced by MIDI, for example notes would often merge into one another without an initial point of attack.
+
+After carrying out research into different Neural Network structures and use-cases, it can be concluded that a Recurrent Neural Network or LSTM would be the most appropriate implementation for this task due to the allowance for different lengths of input and output compared to something like a Convolutional Neural Network which has fixed input and output sizes. Some very promising work was carried out in studies on music generation from MIDI datasets [@hilschermusic; @wyse2018real] which shows the potential of RNN's for this task. A similar project called DeepJazz was produced in a hackathon in a matter of hours and also gave very promising results, again using an RNN.
+
+<!-- Temporal Sigmoid Belief Networks ???
+[@NIPS2015_5655] -->
+
+## User Input and Interface
+
+This component of the project is relatively simple and thus has not been given a great deal of consideration at this stage. A Neural Network approach to image analysis similar to the one described above would allow for the definition of features and characteristics required for the model to gain an understanding of sentiment in music. This could be achieved through labelling and classification of data into different 'moods' or similar groupings which could eventually lead to it matching an input's perceived mood with the type of output it creates. The analysis of images for features is a much simpler task than music; this area of research is also very active, and many examples of such analysis can be found on the internet. It is likely that a lot of the theory and some of the implemented components from the compositional engine could even be reused in image analysis; although here a CNN would likely be more appropriate than an RNN due to the stationary nature of image data.
+
+As mentioned briefly in the report, an image as input is not the only planned way for a user to interact with the compositional engine. It should also be possible for a user to provide textual input or manually set parameters which will again influence the compositional engines output.
+
+## Articles of Interest in the Field
+
+It was clear in the initial stages of this project that the field of computational musical composition is one of intense and rapid development, with a lot of the papers cited being from 2015 and later. Numerous sources of information have been investigated and have proved conducive in terms of inspiration moving forward with the project. For example, the research and updates to Google Brain Team's Magenta Blog [@magenta] have been of great interest throughout the project's development so far as there is a lot of objective overlap.
+
+The general discussion in this blog alongside that found in articles on the internet [@mediumkylemcdonald; @mkofler] helped influence the decision to pursue more complex Neural Network based approaches to composition. Both of these cite Markovian techniques as a *starting point* for this area; something which has quite safely been surpassed in every respect at this point. An article discussing comparisons of various deep learning tools for music generation [@asimovinst] was also informative, highlighting Magenta as a tool of great promise.
+
+Another deep learning tool encountered is GRUV [@nayebi2015gruv], which was mentioned earlier as being an approach trained on raw audio data. It has been used to successfully reproduce some very recognisable snippets of music such as the 'Amen Break' (part of a funk record which has been sampled countless times in popular music) from a set of training data, as well as producing individual instrument sounds [@fiala]. The reproduction of individual instruments could lead to an alternative approach to synthesis and production; layering generated sounds on top of a MIDI composition would be an interesting challenge if the different instruments could somehow be associated with sentiment.
+
+<!-- Reliability of MIDI exporting (done)
+ --><!-- http://nbviewer.jupyter.org/github/craffel/midi-ground-truth/blob/master/Reliability%20Experiments.ipynb
+ -->
+
+
+
+
+# Methodology
+
+<!-- 
+The point is to demonstrate the work was well-planned
+• you thought how to approach the work
+• you assessed alternatives and the current way was best
+• your approach helped you conduct your project in a structured way
+
+To provide a sound basis for any results/conclusions
+• Eg: a sample can be justified as representative; the statistical techniques applied to data analysis were appropriate...
+• So that others can trust your outcomes/findings
+
+-->
+
+## Research Methodology
+
+
+
+## Project Management
+
+Agile in places, refer to the initial posed questions and answer them to iteratively come up with a novel and effective approach supported by research and assessment.
+
+PROJECT DEVELOPMENT this is more about the questions posed and how the project crystallised over time.
+
+Meetings for advice and aid in resolving some of the key issues in the project have taken place roughly once or twice per week with the project's supervisor. This is planned to continue, with the meetings likely to increase in frequency due to a much lower external workload in the next academic term.
+
+With most of the preliminary and supporting research complete, as well as the main few directional questions answered, development may continue in earnest. Below is an updated Gantt chart to show how the project's trajectory and schedule has changed since the initial specification, as well as showing confirmation of the completion of some of the defined tasks. There are some slight changes following the issues or decisions discussed earlier in the document, but for the most part the schedule remains unchanged.
+
+![Updated Scheduling Gantt Chart](diss_gantt.png)
+
+## Development Methodology
+
+<!--
+Eg: (how) did your approach incorporate reqs analysis, design, modularity, incremental testing, reuse, scalability
+(how) did you incorporate the results of user evaluation?
+
+
+-->
+
+DEVELOPMENT actual programming was iterative combined with agile I guess, rushed to MVP in order to gain better idea of foreign concepts.
+
+
+
+
+<!-- SuperCollider, live elements [@supercollider]
+# Current Implementation (Hopefully Something)
+
+source activate magenta
+fluidsynth
+vmpk
+
+magenta_midi --list_ports
+CONTROLLER_PORT="VMPK Output"
+SYNTH_PORT="VMPK Input"
+BUNDLE_PATHS="/Users/harrisonwilde/OneDrive/University/Y3/Dissertation/MagentaModels"
+-->
+
+## Ethical Considerations
+
+All of the software and projects mentioned so far are freely available and open source - with the exception of Melodyne - meaning there are no issues in terms of re-use or forking code for the purposes of this project. Similarly, the use of any of the datasets mentioned above falls within the relevant fair-use laws.
+
+It would still be desirable to carry out a survey with some test subjects to gain qualitative and unbiased assessment of the finished system. However, given the time constraints and nature of the project this is not considered critical as there are plenty of other, less time-consuming means of assessing the outcomes.
+
+
+# Technical Component
+
+## MIDI Transcription
+
+In order to determine which MIDI transcriptions were best, a number of factors were considered. Some preliminary testing was done by first designing a sequence of MIDI notes which could then be played internally and exported as an audio file. These MIDI notes acted as a ground truth. Within these test files, chords and complex structures were included as well as different levels of white noise applied to them. From here different techniques could be tried in order to decide which would be best:
+
+- WaoN [@waon] is a transcription tool which converts `.wav` audio files to `.midi` files. It carries out frequency-domain analysis using Fast Fourier Transforms which are computationally intensive but are flexible and accurate when compared to simpler autocorrelational techniques [klapuri2004automatic; gerhard2003pitch] meaning they are often applied to more complex tasks such as pulling out polyphonic features in music as was the goal of this part of the project. This technique requires no training data and so can be quickly applied to a large array of audio; it is not restricted to a specific genre according to its creator and even has means to try and remove drum sounds when transcribing.
+- Magenta's 'Onset Frames' model [@magentaonsetframes] is considered cutting edge and utilises a convolutional recurrent neural network architecture to predicts pitch events both in a framewise and onset context. I.e. it first predicts where notes may begin and then uses these predictions to influence predicted frames where a certain pitch is present. Where these predictions are in agreement (an onset is predicted for that pitch within the predicted pitch frame) a note is presumed to be present and can be transcribed to MIDI. Training data and scope again rears its head as an issue with this approach, as is mentioned in the referenced paper.
+
+Based on the transcriptions both create it is possible to compare them qualitatively. Magenta’s approach is decisive in its choice of notes and often more confident when it comes to timing due to its training instilling a greater sense of tempo and structure in its transcriptions. WaoN is delicate and plays with wide dynamic range, but often incorporates more false positives in terms of ghost notes (notes that should not be present but are determined to be through frequency clashes, overtones etc.). Both seemed to be viable and offered slightly different versions of the training data to be used in training the compositional engine, and as both were viable it was decided that both should be used. Magenta's model shows great promise and it is likely that with the correct training data this approach would be far superior to WaoN in fixed domain transcriptions (i.e. training the model on a dataset of ground truth transcriptions of a certain genre before using it to transcribe more of that genre, so that it might understand the 'rules' of transcribing genres other than classical more effectively). I have no doubt that in the next few years applications such as WaoN will be largely eschewed in favour of modern machine learning approaches similar to what has happened to the field of Computer Vision over the past decade or so.
+
+## The Model
+
+
+
+## Design
+
+## Implementation
+
+## Theory
+
+
+
+## Testing
+
+Functional testing, unit testing, integration testing ? testing strategies
+
+<!-- 
+For software: design and implementation.
+• Balance between high level (to give overall picture) and some
+lower level details
+• Some more detailed parts are useful to illustrate what/how
+you’ve done things
+• Make sure to show the challenging areas unless obvious.
+• Use of appendices and in-text design/code snippets.
+Presentation and discussion of results/evaluation.
+-->
+
+
+
+# Evaluation
+
+## Conclusions
+
+A favourable configuration was found though further investigation would be required. The function aimed for is a complex one and it is still somewhat unclear how many neurons might work best in modelling the full potential. Here resources of time and computational power must be considered. 
+
+## Internal Comparison of Work
+
+## Contextualised Comparisons with Existing Solutions
+
+## Future Work
+
+As has already been alluded to, experimentation with larger corpuses of data would be an interesting and engaging extension of this work.
+
+Look into SRUs would be cool, potential improvement over GRUs, moving averages present potential relevance to music as a format.
+
+### Performance and Interactivity
+
+One of the most interesting extensions of this project would be to enable the most obvious and intuitive *application* of it. A means of performance or interactivity would be desirable given the chance; Magenta again could be used for this with its MIDI Interface [@magentamidi], allowing for the use of a virtualised MIDI Controller called VMPK [@vmpk] and Software Synthesiser FluidSynth [@fluidsynth].
+
+The default purpose of the MIDI Interface is to allow for a user to play a duet with the computer. In the context of this project, it could allow a user to give the compositional engine some initial inspiration or guidance and then allow it to compose as it would based upon the usual inputs.
+
+### Synthesiser Parameters
+
+Other researchers have successfully trained a model to change parameters of a synthesiser during live performance based on a musician's input and learned preferences [@sommer2014towards]. Moving forward this would be an excellent way to add another dimension to the project's outputted music; existing studies into the sentiments behind different timbres and urgency or latency introduced by manipulations of note attack-delay-sustain-release parameters could form a basis of some quantitative assessment of the results. The input could again influence the output through affecting the choice of parameter programming for the synthesiser used to play the compositions the system produces.
+
+One of the limitations in choosing to train a model on MIDI as mentioned earlier is that the output is also somewhat restricted to this format. At which point choices could be made in terms of how this MIDI is synthesised and played back to the user. This could range from something as simple as instrumental selection, to the tuning of parameters of a chosen synthesis engine as described here.
+
+
+## Author's Assessment of the Project
+
+<!-- As alluded to in the schedule, time has been scarce this term and some additional unforeseen issues have hindered objective completion. Despite this, the progress made has been significant in terms of gaining the appropriate knowledge through research and narrowing the scope of the project to a more linear series of steps. This allows for a more confident assurance of a good resolution to the project, especially in the areas of composition and encoding.
+
+One of the biggest challenges faced so far arose due to the initial design of the project: having a lot of avenues to explore is time consuming but was necessary in this instance due to a lack of the prior understanding required to make these judgements from the start. Moving forward these decisions will be adhered to as closely as possible, ensuring focus remains on the current objectives. Regardless of the strategy moving forward, most of this deliberation ends with the main research component of the project which is now complete.
+ -->
+
+The work discussed indicates the level of technical achievement this project encompasses. Much of the work is of a high level for a third year project and involved significant time investment to learn additional advanced material with which to accomplish the goals of the project. 
+
+The use of neural networks and deep learning is adherent to the description of my degree; probablistic sequence generation is certainly relevant in almost all aspects to the statistical and computational nature of the BSc in Data Science. The project illustrates domain knowledge spanning multiple fields relevant to data science and involved numerous challenging components from a research, theoretical, technical and engineering perspective.
+
+It is hoped that this work forms a relatively robust and all-encompassing summary of not only the outputs of the project but the work involved in achieving it. Other academics and students will hopefully find value in this work and be able to continue to contribute to this fast-moving field. Musical composition as mentioned is a sufficiently complex task to fully leverage some of the more advanced deep learning and sequential modelling techniques which are currently of interest in academia; this work shows their potential applications as well as hopefully contributing to their further development.
+
+Why should this project be considered an achievement?
+
+The incorporation of mood is perhaps the initial limitation an observer may encounter in terms of the initial goals of the project.
+
+# References

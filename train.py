@@ -30,7 +30,7 @@ def plot_loss(training_loss, validation_loss, name):
     plt.clf()
     plt.plot(training_loss)
     plt.plot(validation_loss)
-    plt.savefig(config.OUT_DIR + '/' + name)
+    plt.savefig(config.GRAPHS_DIR + '/' + name)
 
 def train(args, model, train_batcher, train_len, val_batcher, val_len, optimizer, plot=True):
     """
@@ -41,8 +41,13 @@ def train(args, model, train_batcher, train_len, val_batcher, val_len, optimizer
     total_step = 1
 
     # Keep tracks of all losses in each epoch
-    train_losses = []
-    val_losses = []
+    try:
+        train_losses = np.load('train_losses.npy').tolist()
+        val_losses = np.load('val_losses.npy').tolist()
+    except:
+        print("Starting with fresh train and validation loss lists")
+        train_losses = []
+        val_losses = []
 
     # Epoch loop
     while True:
@@ -86,10 +91,10 @@ def train(args, model, train_batcher, train_len, val_batcher, val_len, optimizer
         if plot:
             np.save('train_losses.npy', np.array(train_losses))
             np.save('val_losses.npy', np.array(val_losses))
-            plot_loss(train_losses, val_losses, 'loss ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '.png')
+            plot_loss(train_losses, val_losses, 'loss_' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '.png')
 
         # Save model
-        torch.save(model.state_dict(), config.OUT_DIR + '/model_' + str(epoch) + '.pt')
+        torch.save(model.state_dict(), config.MODELS_DIR + '/model_' + str(epoch) + '.pt')
 
         epoch += 1
 
@@ -138,13 +143,13 @@ def compute_loss(model, data, volatile=False):
     moods = var(moods)
 
     # Feed it to the model
-    inputs = var(one_hot_seq(note_seq[:, :-1], config.NUM_ACTIONS))
-    print(inputs)
-    print(inputs[0])
-    print(inputs[0][0])
-    print(len(inputs))
-    print(len(inputs[0]))
-    print(len(inputs[0][0]))
+    inputs = var(one_hot_seq(note_seq[:, :-1], config.FULL_RANGE))
+    # print(inputs)
+    # print(inputs[0])
+    # print(inputs[0][0])
+    # print(len(inputs))
+    # print(len(inputs[0]))
+    # print(len(inputs[0][0]))
     targets = var(note_seq[:, 1:])
     if volatile:
         with torch.no_grad():
@@ -153,14 +158,14 @@ def compute_loss(model, data, volatile=False):
             # Compute the loss.
             # Note that we need to convert this back into a float because it is a large summation.
             # Otherwise, it will result in 0 gradient.
-            loss = criterion(output.view(-1, config.NUM_ACTIONS).float(), targets.contiguous().view(-1))
+            loss = criterion(output.view(-1, config.FULL_RANGE).float(), targets.contiguous().view(-1))
     else:
         # if output_graph:
         #     import hiddenlayer
         #     graph = hiddenlayer.build_graph(model, (inputs, moods))
         #     graph.save('./graph')
         output, _ = model(inputs, moods, None)
-        loss = criterion(output.view(-1, config.NUM_ACTIONS).float(), targets.contiguous().view(-1))
+        loss = criterion(output.view(-1, config.FULL_RANGE).float(), targets.contiguous().view(-1))
 
     return loss, loss.data.item()
 
@@ -187,7 +192,7 @@ def main():
             model.half()
 
     if args.path:
-        model.load_state_dict(torch.load(args.path))
+        model.load_state_dict(torch.load(config.MODELS_DIR + '/' + args.path))
         print('Restored model from checkpoint.')
 
     # Construct optimizer
@@ -207,7 +212,7 @@ def main():
     print()
 
     print('=== Dataset ===')
-    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs('out', exist_ok=True)
     print('Loading data...')
     data = load()
     print()
