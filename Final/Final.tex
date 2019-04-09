@@ -162,6 +162,7 @@ Professor Graham Cormode\\
 
 \listoftables
 \newpage
+\hypersetup{linkcolor = red}
 
 \null\vspace{\fill}
 \renewcommand{\abstractname}{Acknowledgements}
@@ -174,9 +175,9 @@ Professor Graham Cormode\\
 \noindent
 My personal tutor Professor Bärbel Finkenstädt and trusted advisor and friend Dr Matthew Leeke alongside my supervisor Professor Graham Cormode have shown consistent support on a personal, professional and academic level throughout my time at the University; for this I owe them great thanks.
 
-The support of my family and friends has been invaluable throughout this process; especially my mother Katie who has always been unwavering in her support of me in the pursuit of my aspirations. The sacrifices my family have made in launching who was once a quiet Blackpudlian boy to an environment where I have the ability to be the master of my own fate and have grown into an independent and successful man. All of this will be repaid in time.
+The support of my family and friends has been invaluable throughout this process; especially my mother Katie who has always been unwavering in her support of me in the pursuit of my aspirations.
 
-I would also like to thank all of the artists and musicians featured for their tireless work in adding value and beauty to the world we live in. Most notably, the works of \href{https://www.youtube.com/watch?v=JKsVsEXZXe8}{Ryuichi Sakamoto}, \href{https://music-from-memory.bandcamp.com/track/call-me-2}{Gigi Masin}, \href{https://youtu.be/vveVs8axQRc}{Jónsi and Alex Somers} and \href{https://bvdub.bandcamp.com/track/ember-1}{Brock Van Wey} have shaped my life and offered a great deal of creative and intellectual stimulation over the past years leading up to this culmination of my undergraduate studies.
+I would also like to thank all of the artists and musicians who gave feedback on my work or were featured in the training corpus; without their tireless work the world would be severely lacking in value and beauty. Most notably, the works of \href{https://www.youtube.com/watch?v=JKsVsEXZXe8}{Ryuichi Sakamoto}, \href{https://music-from-memory.bandcamp.com/track/call-me-2}{Gigi Masin}, \href{https://youtu.be/vveVs8axQRc}{Jónsi and Alex Somers}, \href{https://helloflora.bandcamp.com/track/cecilia-lake}{Jamison Isaak} and \href{https://bvdub.bandcamp.com/track/ember-1}{Brock Van Wey} have shaped my years as an undergraduate and offered a great deal of creative and intellectual stimulation as well as instilling a great appreciation for the world and its inhabitants.
 \end{abstract}
 \vspace{\fill}
 \newpage
@@ -204,7 +205,6 @@ Testing indicates that the compositional engine can be trained with any genre of
 \newpage
 
 \pagenumbering{arabic}
-\hypersetup{linkcolor = blue}
 
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
@@ -262,13 +262,12 @@ possibility).
 \subsection{Motivation}\label{motivation}}
 
 Since recurrent neural networks rose to prominence in the 1990s. Deep
-learning shows great promise in the task of composition without any
-human input requirement at all; the model would be one which took
-sentimental input and would be trained without the user having to have
-any musical understanding whatsoever. The question has been present
-since the early 20th century, of how might the ``rules'' of music be
-correctly encapsulated in order to compose musical pieces in an
-automatic fashion.
+learning has shown great promise in the task of completely automatic
+musical composition. This is a complex task exploring some challenging
+computational and philosophical questions in terms of how the ``rules''
+of music might be correctly encapsulated in order to compose musical
+pieces to eventually compete with what has always been an almost
+exclusively human process.
 
 There would be contention in explicitly defining rules for something as
 complex and subjective as music; this is where deep learning's relative
@@ -350,11 +349,11 @@ context to the starting point of this project.
 \subsection{Research Objectives}\label{research-objectives}}
 
 Generative probabilistic models such as recurrent neural networks and
-their many improvements and variations were the main aim for
-exploration. As well as some perhaps simpler interpretations of the
-above name like Markov chains and fields. Development of a novel
-architecture which can compete with existing solutions and better them
-in as many areas as possible is desirable.
+their many improvements and variations were the main subject of
+exploration through research. As well as some perhaps simpler
+interpretations of the above name like Markov chains and fields.
+Development of a novel architecture which can compete with existing
+solutions and better them in as many areas as possible is desirable.
 
 The method is inspired by numerous existing works and recent advances in
 many fields which reveal that deep learning is increasingly effective
@@ -365,168 +364,17 @@ The goal of this project is to build a versatile model whose outputs are
 at best indistinguishable from that of a human and at worst impressive
 in terms of their structure and harmonic coherence.
 
-\hypertarget{goals}{%
-\subsubsection{Goals}\label{goals}}
+\hypertarget{eventual-objectives-and-project-requirements}{%
+\subsection{Eventual Objectives and Project
+Requirements}\label{eventual-objectives-and-project-requirements}}
+
+The main goal
 
 \hypertarget{background}{%
 \section{Background}\label{background}}
 
-\hypertarget{theory}{%
-\subsection{Theory}\label{theory}}
-
-\hypertarget{recurrent-neural-networks-and-their-variants}{%
-\subsection{Recurrent Neural Networks and Their
-Variants}\label{recurrent-neural-networks-and-their-variants}}
-
-\hypertarget{recurrent-neural-network-justifications-and-definitions}{%
-\subsubsection{Recurrent Neural Network Justifications and
-Definitions}\label{recurrent-neural-network-justifications-and-definitions}}
-
-Perhaps the most common form of artificial neural network is the
-\emph{feedforward} network which utilise connected layers of neurons and
-activation functions to approximate different functions through the
-learning of parameters and weights. Their main limitation in this
-context is that they require their inputs to be of a fixed dimension and
-thus are not well suited to dynamic data of varying size such as a
-sequence \((x_i)_{1\le i\le T}\) of time-stepped note states
-representing a composition where \(T\) is the length of the piece.
-
-It is assumed that this type of sequential data has some system of
-dependence on its prior and potentially future elements and so it would
-not be appropriate to simply input each element of a temporal sequence
-into a feedforward network during training. It can clearly be seen by
-observing musical data and considering knowledge of musical harmony
-(songs are often in a certain and consistent key which may be inferred
-by chords and notes present throughout the piece) that the input at each
-time-step is likely to be dependent on other time-steps.
-
-This class of situations led to the development of \textbf{Recurrent
-Neural Networks} which introduce recurrent connections between layers
-over a temporal dimension allowing the network to exhibit dynamic
-behaviour in this dimension.
-
-It is now possible to provide some notation specific to this project
-regarding RNNs. A sequence of inputs is defined as above, with the
-sequence vector at time \(i\) being denoted as
-\(x_i\in \{0,1\}^{D_{\text{input}}}\). At the start of the process all
-weights and activations are initialised to some value. At each time-step
-following this the new activations for each hidden layer are calculated
-using a combination of the current time-steps input and the previous
-activations. This process highlights the possibility of unrolling of an
-RNN into a feedforward network or DAG representation as shown in the
-figure below.
-
-\begin{figure}
-\centering
-\includegraphics{Images/rnnrolled.png}
-\caption{Recurrent connections between the hidden layers of a network}
-\end{figure}
-
-\begin{figure}
-\centering
-\includegraphics{Images/rnnunrolled.png}
-\caption{Identical to the previous figure but with the recurrent
-connections unrolled along the time axis}
-\end{figure}
-
-\hypertarget{lstms}{%
-\subsubsection{LSTMs}\label{lstms}}
-
-\hypertarget{grus}{%
-\subsubsection{GRUs}\label{grus}}
-
-\hypertarget{dilation}{%
-\subsection{Dilation}\label{dilation}}
-
-The concept of dilation was first proposed in the context of
-convolutional neural networks
-{[}\protect\hyperlink{ref-yu2015multi}{6}{]} for image analysis and
-semantic segmentation; this work was discovered during research for a
-\protect\hyperlink{sentimentfromimages}{potential extension} of this
-project. The main concept is to aggregate information at different
-contextual scalings without losing resolution by exploding a kernel's
-considered neighbourhood around a central pixel / element. This is done
-to increase the likelihood of discovering pattern structures at
-different resolutions within an input as well as increasing the area of
-an image or input which can be considered through a small number of
-steps.
-
-It offers an alternative to other techniques often relying on
-down-sampling which sacrifice resolution rather than considering
-different contexts at full resolution as is the case with dilation.
-
-\begin{figure}
-\centering
-\includegraphics{Images/dilationconv2.png}
-\caption{Different dilation factors (represented by the value of D)
-illustrated on a 2-dimensional input}
-\end{figure}
-
-This technique has shown to be very effective in aiding dense prediction
-problems (predicting labels for each pixel in an image, or with respect
-to this project's proposed equivalence of predicting on or off states
-for each note on the piano over a series of time steps). Deepmind
-researchers applied a similar approach within their own convolutional
-network for WaveNet which is the first documented use of dilation in the
-musical composition domain
-{[}\protect\hyperlink{ref-oord2016wavenet}{7}{]}. Their results found
-that again the addition of dilation conceptually increased the accuracy
-and effectiveness of their model.
-
-A paper was published linking this concept with recurrent neural
-networks in 2017 by Chang et
-al.~{[}\protect\hyperlink{ref-chang2017dilated}{8}{]}. This paper forms
-the basis for the justification of using dilation in the model present
-in this project; this project's compositional model is potentially the
-first use of dilated recurrent neural networks in the musical
-composition domain.
-
-\begin{figure}
-\centering
-\includegraphics{Images/dilationrnn.png}
-\caption{An example of a three-layer DRNN with dilation factors 1, 2,
-and 4}
-\end{figure}
-
 \hypertarget{related-work}{%
 \subsection{Related Work}\label{related-work}}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{3}
-\item
-  RNNs despite their invariance lack long term coherence meaning they
-  often fail when complex dependencies are built up and different
-  temporal structures must be captured. To combat these issues Long
-  short term memory networks, dilated RNNs, restricted Boltzmann
-  Machines etc have been developed. They all model joint distributions
-  or conditional probabilities like RNNs but involve mechanisms to
-  ensure a greater understanding of long term structure in the models.
-  The greatest issue with RNNs in this area is their tendency towards
-  exploding or vanishing gradients over time due to repeated and
-  recurrent backpropagation, i.e.~tiny values will often compound and be
-  multiplied together leading to the network getting stuck or learn very
-  slowly. All of these variants minimise these problems in various ways
-  and so lend themselves better to creating structured, coherent outputs
-  like music.
-\item
-  Image processing has some parallels to my approach as well. I wanted
-  to introduce more concepts of relativity into my model over absolute
-  structures beyond just the time thing; many existing solutions include
-  networks where each note corresponds to a specific node. However,
-  music is more of a relative set of rules in that pieces can be
-  transposed up or down in key and you can always construct chords and
-  melodies relative to that key. So I wanted my network to be able to
-  capture this understanding rather than just being able to copy certain
-  chords it learns; this way it can perform in a more varied and
-  realistic way. Image processing has a similar idea already in which a
-  kernel is used to take a neighbourhood of pixels in an image and carry
-  out some transformation on them. My idea was to do this with an octave
-  above and below each note, feeding this neighbourhood into its own
-  network which would then focus only on the relative position of notes
-  to learn harmonic structure without worrying which note was actually
-  being played.
-\end{enumerate}
 
 \hypertarget{competitive-existing-solutions}{%
 \subsubsection{Competitive Existing
@@ -576,16 +424,15 @@ constraints.
 Ableton (a company at the forefront of digital audio technology)
 employee Anna Wszeborowska spoke at EuroPython 2016 on the applications
 of Python in encoding from raw audio data to MIDI
-{[}\protect\hyperlink{ref-annaw}{9}{]}. Indeed, an implementation to
+{[}\protect\hyperlink{ref-annaw}{6}{]}. Indeed, an implementation to
 this end has been partially completed, producing some interesting
 results. Google Brain's Magenta was heralded in the specification as one
 of the more promising existing tools: a TensorFlow sub-package focussing
 on musical composition, transcription and other artistic endeavours. The
-`Onset Frames' model
-{[}\protect\hyperlink{ref-magentaonsetframes}{10}{]} from Magenta's
-library of pre-trained models uses Neural Networks to transcribe piano
-pieces to MIDI, and also works reasonably well in transcribing other
-forms of music.
+`Onset Frames' model {[}\protect\hyperlink{ref-magentaonsetframes}{7}{]}
+from Magenta's library of pre-trained models uses Neural Networks to
+transcribe piano pieces to MIDI, and also works reasonably well in
+transcribing other forms of music.
 
 Cross-validation between this model's output and a method of encoding
 raw audio to MIDI implemented in Python will be attempted as both
@@ -603,7 +450,7 @@ example.
 Another option which is yet to be considered is the use of Convolutional
 Neural Networks. These have been applied extensively in the past to the
 task of musical transcription
-{[}\protect\hyperlink{ref-bereketai}{11}{]}--{[}\protect\hyperlink{ref-sigtia2016end}{13}{]}
+{[}\protect\hyperlink{ref-bereketai}{8}{]}--{[}\protect\hyperlink{ref-sigtia2016end}{10}{]}
 with state-of-the-art results at their resolutions. It is likely that as
 the project progresses, work on applying this existing research and
 exploration into the possibilities of other models will continue and be
@@ -620,17 +467,16 @@ two components.
 All of the approaches to transcription are impractical to a certain
 extent following on from the concerns regarding time requirements and
 uncertainty made above; it is for this reason that some large MIDI data
-libraries such as the Lakh dataset
-{[}\protect\hyperlink{ref-lakh}{14}{]} and Metacreation's corpus
-{[}\protect\hyperlink{ref-metacreation}{15}{]} could still be fallen
-back on if time becomes too constrictive. The existence of such datasets
-allows for work on the compositional engine to begin without delay, but
-ideally one of the approaches above will eventually lead to the creation
-of a similar dataset to be utilised in more intricate feature
-engineering as well as being a more relevant dataset to the genres of
-music which comprise the initial focus of this project. The MAESTRO Data
-Set of MIDI corresponding to piano transcriptions
-{[}\protect\hyperlink{ref-maestro2018}{16}{]} is used by Magenta to
+libraries such as the Lakh dataset {\textbf{???}} and Metacreation's
+corpus {[}\protect\hyperlink{ref-metacreation}{11}{]} could still be
+fallen back on if time becomes too constrictive. The existence of such
+datasets allows for work on the compositional engine to begin without
+delay, but ideally one of the approaches above will eventually lead to
+the creation of a similar dataset to be utilised in more intricate
+feature engineering as well as being a more relevant dataset to the
+genres of music which comprise the initial focus of this project. The
+MAESTRO Data Set of MIDI corresponding to piano transcriptions
+{[}\protect\hyperlink{ref-maestro2018}{12}{]} is used by Magenta to
 train their Onset Frames model and so could also form part of the
 training data for the project.
 
@@ -638,7 +484,7 @@ MIDI is easy to work with and clear in its structure, especially when
 compared to the complexities of raw audio waveform data. However, there
 is still the matter of actually using this data to train a model; for
 this TensorFlow already has a technique for converting MIDI to so-called
-`Note Sequences' {[}\protect\hyperlink{ref-notesequences}{17}{]} which
+`Note Sequences' {[}\protect\hyperlink{ref-notesequences}{13}{]} which
 define all the characteristics of a MIDI file in a Pythonic format. This
 conversion is painless and allows for more standard feature engineering
 and manipulation techniques to be done inside of Python using familiar
@@ -661,7 +507,7 @@ overall piece. Initial work on this approach provided a clear-cut first
 step to the project as it did not require a huge amount of prior work
 due to familiarity with the mechanisms and concepts behind it, as well
 as the existence of other attempts at Markovian composition
-{[}\protect\hyperlink{ref-markovcomposer}{18}{]}.
+{[}\protect\hyperlink{ref-markovcomposer}{14}{]}.
 
 The ease of this approach also summarises its main disadvantage: there
 is a noticeable lack of complexity and novelty in the pieces composed.
@@ -697,11 +543,11 @@ musical composition.
 Neural Networks are undoubtedly a very active area of research; a lot of
 which is relevant or could even be directly applied to this project. For
 example, ``How we Made Music Using Neural Networks''
-{[}\protect\hyperlink{ref-alextavgen}{19}{]} references an article by
+{[}\protect\hyperlink{ref-alextavgen}{15}{]} references an article by
 Andrej Karpathy (Tesla's Director of AI); both of these pieces together
 formulate a good introduction to the technologies to be implemented for
 a large portion of the remainder of this project. The Karpathy article
-{[}\protect\hyperlink{ref-karpathy}{20}{]} showcases some of the
+{[}\protect\hyperlink{ref-karpathy}{16}{]} showcases some of the
 capabilities of Recurrent Neural Networks working on generating code,
 text and images. Music is considered to be a more challenging feat for
 these systems, which is perhaps intuitive given its continuous and often
@@ -710,19 +556,19 @@ exploration into this challenge, a challenge which this project will go
 further in trying to tackle.
 
 Google's Magenta project was mentioned as one of the main leads for
-composition in the specification and remains so at this point in the
-project. Magenta's collection of pre-trained models is testament to the
-promise of this platform; more specifically there are pre-trained models
-available which produce improvisation, polyphony and interpolation of
-input pieces {[}\protect\hyperlink{ref-magentavae}{21}{]},
-{[}\protect\hyperlink{ref-magentapolyphony}{22}{]}. The aim of this
+composition. Magenta's collection of pre-trained models is testament to
+the promise of this platform; more specifically there are pre-trained
+models available which produce improvisation, polyphony and
+interpolation of input pieces
+{[}\protect\hyperlink{ref-magentavae}{17}{]},
+{[}\protect\hyperlink{ref-magentapolyphony}{18}{]}. The aim of this
 project is to build and train a model sitting somewhere between these
 existing ones, one which is capable of generating inspired sequences of
 chords and notes and then recurrently feeding these generations back
 into itself in order to emulate improvisation.
 
 Based on Magenta's current capabilities, an improvisational RNN
-{[}\protect\hyperlink{ref-magentaimprov}{23}{]} combined with an LSTM
+{[}\protect\hyperlink{ref-magentaimprov}{19}{]} combined with an LSTM
 net to improvise off interpolations between existing sources would
 introduce enough variance and novelty to achieve the goals set for the
 compositional engine. Preliminary experiments and tests with the models
@@ -743,17 +589,16 @@ Networks show more promise for composition than the Markovian approach.
 This choice links back into the choices made for the format of data to
 be used to train the models. There are Neural Network based systems
 which generate MIDI such as Magenta and DeepJazz
-{[}\protect\hyperlink{ref-deepjazz}{24}{]}, in contrast to some which
+{[}\protect\hyperlink{ref-deepjazz}{20}{]}, in contrast to some which
 instead generate raw audio waveforms such as WaveNet, GRUV and SampleRNN
-{[}\protect\hyperlink{ref-oord2016wavenet}{7}{]},
-{[}\protect\hyperlink{ref-Nayebi2015GRUVA}{25}{]},
-{[}\protect\hyperlink{ref-mehri2016samplernn}{26}{]}. As mentioned
-previously, using raw audio would be infeasible in a project of this
-scale and so a lot of the tools and options for composition with Neural
-Networks could immediately be discarded. The outputs from these other
-approaches were often more abstract as they were not limited to standard
-musical notation enforced by MIDI, for example notes would often merge
-into one another without an initial point of attack.
+{[}\protect\hyperlink{ref-oord2016wavenet}{21}{]}--{[}\protect\hyperlink{ref-mehri2016samplernn}{23}{]}.
+As mentioned previously, using raw audio would be infeasible in a
+project of this scale and so a lot of the tools and options for
+composition with Neural Networks could immediately be discarded. The
+outputs from these other approaches were often more abstract as they
+were not limited to standard musical notation enforced by MIDI, for
+example notes would often merge into one another without an initial
+point of attack.
 
 After carrying out research into different Neural Network structures and
 use-cases, it can be concluded that a Recurrent Neural Network or LSTM
@@ -762,8 +607,8 @@ allowance for different lengths of input and output compared to
 something like a Convolutional Neural Network which has fixed input and
 output sizes. Some very promising work was carried out in studies on
 music generation from MIDI datasets
-{[}\protect\hyperlink{ref-hilschermusic}{27}{]},
-{[}\protect\hyperlink{ref-wyse2018real}{28}{]} which shows the potential
+{[}\protect\hyperlink{ref-hilschermusic}{24}{]},
+{[}\protect\hyperlink{ref-wyse2018real}{25}{]} which shows the potential
 of RNN's for this task. A similar project called DeepJazz was produced
 in a hackathon in a matter of hours and also gave very promising
 results, again using an RNN.
@@ -808,23 +653,23 @@ objective overlap.
 
 The general discussion in this blog alongside that found in articles on
 the internet {[}\protect\hyperlink{ref-mediumkylemcdonald}{4}{]},
-{[}\protect\hyperlink{ref-mkofler}{29}{]} helped influence the decision
+{[}\protect\hyperlink{ref-mkofler}{26}{]} helped influence the decision
 to pursue more complex Neural Network based approaches to composition.
 Both of these cite Markovian techniques as a \emph{starting point} for
 this area; something which has quite safely been surpassed in every
 respect at this point. An article discussing comparisons of various deep
 learning tools for music generation
-{[}\protect\hyperlink{ref-asimovinst}{30}{]} was also informative,
+{[}\protect\hyperlink{ref-asimovinst}{27}{]} was also informative,
 highlighting Magenta as a tool of great promise.
 
 Another deep learning tool encountered is GRUV
-{[}\protect\hyperlink{ref-nayebi2015gruv}{31}{]}, which was mentioned
+{[}\protect\hyperlink{ref-nayebi2015gruv}{28}{]}, which was mentioned
 earlier as being an approach trained on raw audio data. It has been used
 to successfully reproduce some very recognisable snippets of music such
 as the `Amen Break' (part of a funk record which has been sampled
 countless times in popular music) from a set of training data, as well
 as producing individual instrument sounds
-{[}\protect\hyperlink{ref-fiala}{32}{]}. The reproduction of individual
+{[}\protect\hyperlink{ref-fiala}{29}{]}. The reproduction of individual
 instruments could lead to an alternative approach to synthesis and
 production; layering generated sounds on top of a MIDI composition would
 be an interesting challenge if the different instruments could somehow
@@ -835,6 +680,19 @@ be associated with sentiment.
 
 \hypertarget{research-methodology}{%
 \subsection{Research Methodology}\label{research-methodology}}
+
+The first stages of this project in particular had stringent research
+requirements in order to formulate an effective approach. There was a
+large body of work to investigate, much of which consists of research
+from the past couple of years meaning much of it is still somewhat
+theoretical or lacking in implementation options. This imposed a
+requirement of careful thought in terms of which avenues might be worth
+exploring and which were feasible with the given resources and
+time-frame.
+
+Due to the scale of the task taken on, and the technical requirements,
+it was decided that first formulating some research questions would be
+the best approach.
 
 \hypertarget{project-management}{%
 \subsection{Project Management}\label{project-management}}
@@ -861,32 +719,51 @@ tasks. There are some slight changes following the issues or decisions
 discussed earlier in the document, but for the most part the schedule
 remains unchanged.
 
-\begin{figure}
-\centering
-\includegraphics{diss_gantt.png}
-\caption{Updated Scheduling Gantt Chart}
-\end{figure}
-
 \hypertarget{development-methodology}{%
 \subsection{Development Methodology}\label{development-methodology}}
 
 DEVELOPMENT actual programming was iterative combined with agile I
 guess, rushed to MVP in order to gain better idea of foreign concepts.
 
+Cues were taken from previous development experience alongside agile
+methodologies to try and accommodate for a flexible, research-driven
+development process. Deep learning lends itself to trialling ideas and
+performing evaluation due to the black box nature of some of its
+components; the task itself does not have a ``fixed'' optimal solution
+implying that the development process would have to accommodate for
+changing requirements and focusses on improvement rather than reaching
+some pre-determined threshold.
+
 \hypertarget{ethical-considerations}{%
 \subsection{Ethical Considerations}\label{ethical-considerations}}
 
-All of the software and projects mentioned so far are freely available
-and open source - with the exception of Melodyne - meaning there are no
-issues in terms of re-use or forking code for the purposes of this
-project. Similarly, the use of any of the datasets mentioned above falls
-within the relevant fair-use laws.
+There are no major ethical considerations in this project. All of the
+potential issues are briefly discussed here.
 
-It would still be desirable to carry out a survey with some test
-subjects to gain qualitative and unbiased assessment of the finished
-system. However, given the time constraints and nature of the project
-this is not considered critical as there are plenty of other, less
-time-consuming means of assessing the outcomes.
+All citations have been checked and are included where necessary to
+ensure credit is given where existing work has been reused or had a
+significant influence on the course of the project. The code used for
+sentiment analysis was based upon the DeepSent project as already
+mentioned which is present on GitHub under an open source Apache 2.0
+license via its creator Mu Chen. The rest of the code included in the
+technical appendix is referenced where appropriate or entirely original.
+
+A small survey was devised and carried out in order to test a subject's
+ability to differentiate between human composed pieces and those of the
+compositional engine. This survey was carried out with willing
+participants over the internet by sending them a mix of unmarked audio
+files all synthesised using the same virtual piano. The user is simply
+asked to categorise them into human and non-human composition folders
+before sending them back. This ensures the study was unbiased and also
+offered the chance to ask for feedback as to the quality of the pieces
+once a participant had carried out the first task. The results were
+recorded over a period of 2 weeks and are presented in the evaluation
+section.
+
+This survey was discussed with the project's supervisor but was deemed
+to be satisfactory in terms of any ethical considerations; no further
+justification or recourse was necessary to ensure the ethicacy of it as
+a means of evaluation.
 
 \hypertarget{technical-component}{%
 \section{Technical Component}\label{technical-component}}
@@ -919,7 +796,7 @@ best:
   means to try and remove drum sounds when transcribing.
 \item
   Magenta's `Onset Frames' model
-  {[}\protect\hyperlink{ref-magentaonsetframes}{10}{]} is considered
+  {[}\protect\hyperlink{ref-magentaonsetframes}{7}{]} is considered
   cutting edge and utilises a convolutional recurrent neural network
   architecture to predicts pitch events both in a framewise and onset
   context. I.e. it first predicts where notes may begin and then uses
@@ -952,20 +829,325 @@ be largely eschewed in favour of modern machine learning approaches
 similar to what has happened to the field of Computer Vision over the
 past decade or so.
 
+\hypertarget{implementation}{%
+\subsubsection{Implementation}\label{implementation}}
+
+Most of the code relevant to this section is present in the
+\texttt{dataset.py} and \texttt{conversion.py} files included with this
+document.
+
+\hypertarget{sentiment-analysis}{%
+\subsection{Sentiment Analysis}\label{sentiment-analysis}}
+
+In order to satisfy the requirements of the proejct regarding sentiment,
+it was necessary to first extract the sentiment from each component of
+the training data corpus and then formulate a means of attaching this
+sentiment to the representation of the training data to be fed into the
+model during training.
+
+Much of the technical work regarding extraction of sentiment from audio
+follows the work done by Mu Chen and their DeepSent project
+{[}\protect\hyperlink{ref-deepsent}{30}{]}. This code was used as a
+basis upon which a vector of mood values could be generated
+automatically for each element of a training data set and then
+associated with the accompanying MIDI files to be used in training. The
+sentiment is measured with respect to an arousal-valence emotional model
+known as the Circumplex model
+{[}\protect\hyperlink{ref-russell1980circumplex}{31}{]}, with values
+being determined for both axes of arousal and valence.
+
+\begin{figure}
+\centering
+\includegraphics{Images/circumplex.png}
+\caption{Two dimensional representation of the Circumplex model with
+labels plotted on the resulting plane}
+\end{figure}
+
+In this context, arousal refers to the perceived intensity of a piece;
+ranging from a relaxed or somewhat lethargic feeling to a more intense
+and excited stimulation. Valence is a spectrum of the affect on a
+listeners level of happiness or sadness which may be incited by the
+piece. Values for both axes were estimated and ratios calculated to
+fulfil three ratio values regarding each axis. The ratios are calculated
+as shown below following predictions made by the models:
+
+\[\begin{aligned}
+S_A &= \{\text{Scores assigned to each input by the arousal regressor model}\} \\
+\text{Arousal Intense Ratio } &= \frac{\sum_{S_A} \mathbbm{1}_{\text{Score}> 2}}{|S_A|} \\
+\text{Arousal Relaxing Ratio } &= \frac{\sum_{S_A} \mathbbm{1}_{\text{Score}< 1}}{|S_A|} \\
+\text{Arousal Mid Ratio } &= 1 - (\text{Arousal Intense Ratio} + \text{Arousal Relaxing Ratio}) \\ \\
+S_V &= \{\text{Scores assigned to each input by the valence regressor model}\} \\
+\text{Valence Happy Ratio } &= \frac{\sum_{S_V} \mathbbm{1}_{\text{Score}> 2}}{|S_V|} \\
+\text{Valence Sad Ratio } &= \frac{\sum_{S_V} \mathbbm{1}_{\text{Score}< 1}}{|S_V|} \\
+\text{Valence Neutral Ratio } &= 1 - (\text{Valence Happy Ratio} + \text{Valence Sad Ratio}) \\
+\end{aligned}\]
+
+In both cases it can be seen that ratios are calculated through taking
+the top and bottom few scores and calculating the ratio of each above
+and below boundaries which were formulated through testing and with
+respect to the original work. It is worth noting that all scores fall
+between a range of 0 and around 5, but extreme values are clipped to 3
+as they do not appear and are often spurious.
+
+\hypertarget{implementation-1}{%
+\subsubsection{Implementation}\label{implementation-1}}
+
+Most of the code relevant to this section is included in the
+\texttt{mood.py} file included with this document.
+
+Each piece to be analysed is trimmed of its start and end (which are
+likely to be sparse and potentially irregular in terms of their content
+when compared to the main body of a piece occurring around its midpoint)
+to leave the middle 70\% of the data. This raw data is then windowed
+into 5-second long frames of samples, with a step of 0.5 seconds between
+the starting points of each (such that there is overlap between frames).
+Within each of these there is then a further decomposition into 25ms
+sub-frames that are transformed into an array of Mel-frequency cepstral
+coefficients (MFCCs). The matrices representing the coefficients for
+each sub-frame are then flattened and fed into a 3-layer neural network
+regressor. The neural networks associate patterns common within certain
+moods based upon what was learnt from numerous large datasets used for
+training these models.
+
+These ratios are then packed into a 6 item vector and associated with
+each of the training MIDI files to be loaded during training.
+Thresholding as a means of segmentation was implemented by setting all
+ratios greater than 50 to 1 and those below 50 to 0. This offered
+computational improvements but slightly decreased the effectiveness of
+the mood transfer to training pieces in the opinion of the author and
+some survey participants. Due to the subjectivity of this part of the
+output, it was hard to assess which approach was more effective in
+capturing mood and so the simpler, less computationally intense
+thresholding option was chosen. This resulted in a six element
+\emph{binary} vector representing mood associated with each item in the
+training corpus.
+
+\hypertarget{recurrent-neural-networks-and-their-variants}{%
+\subsection{Recurrent Neural Networks and Their
+Variants}\label{recurrent-neural-networks-and-their-variants}}
+
+\hypertarget{recurrent-neural-network-justifications-and-definitions}{%
+\subsubsection{Recurrent Neural Network Justifications and
+Definitions}\label{recurrent-neural-network-justifications-and-definitions}}
+
+Perhaps the most common form of artificial neural network is the
+\emph{feedforward} network which utilise connected layers of neurons and
+activation functions to approximate different functions through the
+learning of parameters and weights. Their main limitation in this
+context is that they require their inputs to be of a fixed dimension and
+thus are not well suited to dynamic data of varying size such as a
+sequence \((x_i)_{1\le i\le T}\) of time stepped note states
+representing a composition where \(T\) is the length of the piece.
+
+It is assumed that this type of sequential data has some system of
+dependence on its prior and potentially future elements and so it would
+not be appropriate to simply input each element of a temporal sequence
+into a feedforward network during training. It can clearly be seen by
+observing musical data and considering knowledge of musical harmony
+(songs are often in a certain and consistent key which may be inferred
+by chords and notes present throughout the piece) that the input at each
+time step is likely to be dependent on other time steps.
+
+This class of situations led to the development of \textbf{Recurrent
+Neural Networks} which introduce recurrent connections between layers
+over a temporal dimension allowing the network to exhibit dynamic
+behaviour in this dimension.
+
+It is now possible to provide some notation specific to this project
+regarding RNNs. A sequence of inputs is defined as above, with the
+vector corresponding to the sequence at time \(i\) denoted as
+\(x_i\in \{0,1\}^{D_{\text{input}}}\).
+
+At the start of the process all weights and activations are initialised
+to some value. At each time step following this the new activations for
+each hidden layer are calculated using a combination of the current time
+steps input and the previous activations. This process highlights the
+possibility of unrolling of an RNN into a feedforward network or DAG
+representation as shown in the figure below.
+
+\begin{figure}
+\centering
+\includegraphics{Images/rnn.png}
+\caption{Recurrent connections between the hidden layers of a network}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{Images/unrolledrnn.png}
+\caption{Identical to the previous figure in meaning but with the
+recurrent connections unrolled along the time axis}
+\end{figure}
+
+The most important property of this class of network is their \emph{time
+invariance}, in that at a given time step the networks activations and
+learned properties can all be considered relative to previous time
+steps. The activations at one time step influence the next. The ability
+to recurrently input into the network is the clear reason for its usage
+in this context over traditional feedforward networks.
+
+Despite this time invariance and flexibility in terms of the dimension
+of their inputs, they lack long term coherence meaning they often fail
+when complex dependencies are built up and different temporal structures
+must be captured. They are susceptible to exploding or vanishing
+gradients over time due to repeated and recurrent backpropagation,
+i.e.~tiny values will often compound and be multiplied together leading
+to the network getting stuck or significantly slowing its learning.
+These issues have inspired a number of variants aiming to mitigate these
+problems and form the basis of most current approaches to musical
+composition. They are discussed in the sections below.
+
+\hypertarget{long-short-term-memory-recurrent-units}{%
+\subsubsection{Long Short-Term Memory Recurrent
+Units}\label{long-short-term-memory-recurrent-units}}
+
+\begin{figure}
+\centering
+\includegraphics{Images/lstm.png}
+\caption{A single Long Short-Term Memory Unit taking input at a single
+time step}
+\end{figure}
+
+\hypertarget{gated-recurrent-units}{%
+\subsubsection{Gated Recurrent Units}\label{gated-recurrent-units}}
+
+\begin{figure}
+\centering
+\includegraphics{Images/gru.png}
+\caption{A single Gated Recurrent Unit taking input at a single time
+step}
+\end{figure}
+
+\hypertarget{dilation}{%
+\subsection{Dilation}\label{dilation}}
+
+The concept of dilation was first proposed in the context of
+convolutional neural networks
+{[}\protect\hyperlink{ref-yu2015multi}{32}{]} for image analysis and
+semantic segmentation; this work was discovered during research for a
+\protect\hyperlink{sentimentalinputfromimages}{potential extension} of
+this project. The main concept is to aggregate information at different
+contextual scalings without losing resolution by exploding a kernel's
+considered neighbourhood around a central pixel / element. This is done
+to increase the likelihood of discovering pattern structures at
+different resolutions within an input as well as increasing the area of
+an image or input which can be considered through a small number of
+steps.
+
+It offers an alternative to other techniques often relying on
+down-sampling which sacrifice resolution rather than considering
+different contexts at full resolution as is the case with dilation.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth,height=\textheight]{Images/dilation2d.png}
+\caption{Different dilation factors (represented by the value of D)
+illustrated on a 2-dimensional input}
+\end{figure}
+
+This technique has shown to be very effective in aiding dense prediction
+problems (predicting labels for each pixel in an image, or with respect
+to this project's proposed equivalence of predicting on or off states
+for each note on the piano over a series of time steps). Deepmind
+researchers applied a similar approach within their own convolutional
+network for WaveNet which is the first documented use of dilation in the
+musical composition domain
+{[}\protect\hyperlink{ref-oord2016wavenet}{21}{]}. Their results found
+that again the addition of dilation conceptually increased the accuracy
+and effectiveness of their model.
+
+A paper was published linking this concept with recurrent neural
+networks in 2017 by Chang et
+al.~{[}\protect\hyperlink{ref-chang2017dilated}{33}{]}. This paper forms
+the basis for the justification of using dilation in the model present
+in this project; this project's compositional model is potentially the
+first use of dilated recurrent neural networks in the musical
+composition domain.
+
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{Images/dilatedrnn.png}
+\caption{An example of a three-layer DRNN with dilation factors 1, 2,
+and 4}
+\end{figure}
+
+\hypertarget{bi-axial-architectures}{%
+\subsection{Bi-Axial Architectures}\label{bi-axial-architectures}}
+
+Consideration of musical theory is the main inspiration for the
+following section. There is a large body of documentation and research
+surrounding musical theory which a reader might find helpful in adding
+context to this paper; the essentials are included for convenience.
+
+In general, compositions are written with respect to a \textbf{key}
+which roughly determines the scales upon which harmonics and chords for
+a piece are constructed. Each key is simply a transformation or rather a
+transposition of another through some number of shifts up or down.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,height=0.4\textheight]{Images/flypaperfifths.png}
+\caption{Diagram showing the circle of fifths}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,height=0.3\textheight]{Images/transp3b.png}
+\caption{Example of a transposition from F major to B flat major and D
+major}
+\end{figure}
+
+This highlights a potential issue with many pre-existing attempts at
+composition using neural networks and limitations of some distribution
+estimators such as Restricted Boltzmann Machines and Neural
+Autoregressive Distribution Estimators. All of the harmonics present in
+music (aside from some intentional dissonances) are entirely relative by
+nature. For example, if we represent all possible played MIDI notes as a
+binary vector where 1 represents a played note and 0 represents the lack
+of a note at this location. A major triad chord can be represented as:
+
+\[... 0100010010 ...\]
+
+Regardless of its position in the input sequence. It is know that the
+relative position of notes represented by some subsequence of an input
+matching the locations above would result in a major triad of some key.
+This highlights the property of \emph{harmonic invariance} in music
+
+Time invariance
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Image processing has some parallels to my approach as well. I wanted
+  to introduce more concepts of relativity into my model over absolute
+  structures beyond just the time thing; many existing solutions include
+  networks where each note corresponds to a specific node. However,
+  music is more of a relative set of rules in that pieces can be
+  transposed up or down in key and you can always construct chords and
+  melodies relative to that key. So I wanted my network to be able to
+  capture this understanding rather than just being able to copy certain
+  chords it learns; this way it can perform in a more varied and
+  realistic way. Image processing has a similar idea already in which a
+  kernel is used to take a neighbourhood of pixels in an image and carry
+  out some transformation on them. My idea was to do this with an octave
+  above and below each note, feeding this neighbourhood into its own
+  network which would then focus only on the relative position of notes
+  to learn harmonic structure without worrying which note was actually
+  being played.
+\end{enumerate}
+
 \hypertarget{the-model}{%
 \subsection{The Model}\label{the-model}}
-
-\hypertarget{dilation-1}{%
-\subsubsection{Dilation}\label{dilation-1}}
 
 \hypertarget{design}{%
 \subsection{Design}\label{design}}
 
-\hypertarget{implementation}{%
-\subsection{Implementation}\label{implementation}}
+\hypertarget{implementation-2}{%
+\subsection{Implementation}\label{implementation-2}}
 
-\hypertarget{theory-1}{%
-\subsection{Theory}\label{theory-1}}
+\hypertarget{theory}{%
+\subsection{Theory}\label{theory}}
 
 \hypertarget{testing}{%
 \subsection{Testing}\label{testing}}
@@ -989,15 +1171,41 @@ considered.
 \subsection{Internal Comparison of
 Work}\label{internal-comparison-of-work}}
 
+Compare different layer configurations, pyramid and number of units and
+also GRU and LSTM.
+
 \hypertarget{contextualised-comparisons-with-existing-solutions}{%
 \subsection{Contextualised Comparisons with Existing
 Solutions}\label{contextualised-comparisons-with-existing-solutions}}
 
+Insert the tables of comparisons with existing solutions
+
+\hypertarget{qualitative-surveying-assessment}{%
+\subsection{Qualitative Surveying
+Assessment}\label{qualitative-surveying-assessment}}
+
 \hypertarget{future-work}{%
 \subsection{Future Work}\label{future-work}}
 
-As has already been alluded to, experimentation with larger corpuses of
-data would be an interesting and engaging extension of this work.
+\hypertarget{improved-data-collection-and-corpus-creation}{%
+\subsubsection{Improved Data Collection and Corpus
+Creation}\label{improved-data-collection-and-corpus-creation}}
+
+As has already been alluded to, perhaps the biggest issue faced
+throughout this project has been one of data. New architectures were
+developed and tested iteratively but all of them faced similar
+limitations due to a lack of data. The model itself proved to be close
+to state-of-the-art through its training performance and quantitative
+evaluation. However, many of the pieces still seemed to leave something
+to be desired; especially when the created ambient corpus was used
+
+\hypertarget{sentimental-input-from-images}{%
+\subsubsection{Sentimental Input from
+Images}\label{sentimental-input-from-images}}
+
+\hypertarget{alternative-architectures}{%
+\subsubsection{Alternative
+Architectures}\label{alternative-architectures}}
 
 Look into SRUs would be cool, potential improvement over GRUs, moving
 averages present potential relevance to music as a format.
@@ -1006,27 +1214,46 @@ averages present potential relevance to music as a format.
 \subsubsection{Performance and
 Interactivity}\label{performance-and-interactivity}}
 
-One of the most interesting extensions of this project would be to
-enable the most obvious and intuitive \emph{application} of it. A means
-of performance or interactivity would be desirable given the chance;
-Magenta again could be used for this with its MIDI Interface
-{[}\protect\hyperlink{ref-magentamidi}{33}{]}, allowing for the use of a
-virtualised MIDI Controller called VMPK
-{[}\protect\hyperlink{ref-vmpk}{34}{]} and Software Synthesiser
-FluidSynth {[}\protect\hyperlink{ref-fluidsynth}{35}{]}.
+This project proves that additional features can effectively be
+incorporated into the model. Indeed, a mood may be input at the time of
+generation in order to influence the model's output. A natural extension
+of this would be to provide additional ways to interact with the model
+at the point of generation through giving a user the chance to manually
+inspire the model. This could potentially be as intuitive as allowing a
+user to play a short number of notes or chords and have these set the
+initial weightings for the network, which would presumably go on to
+compose a whole piece from these starting conditions. This would
+certainly be possible given a greater corpus of training data to allow
+for the model to have a greater understanding of shorter inputs; could
+allow for musicians to use the model creatively in terms of inputting
+short ideas into it and exploring its responses.
 
-The default purpose of the MIDI Interface is to allow for a user to play
-a duet with the computer. In the context of this project, it could allow
-a user to give the compositional engine some initial inspiration or
-guidance and then allow it to compose as it would based upon the usual
-inputs.
+Many of the Magenta team's efforts since the launch of interactive
+TensorFlow.js have incorporated ideas such as these; it is relatively
+simple to hook up a MIDI interface into the model such that it could
+receive input in a way similar to how some of the Magenta models do.
+
+In order to further build upon the user experience of this project, a
+simple web app could be built to contribute to a larger population size
+for the \protect\hyperlink{qualitativesurveryingmethod}{surveying
+method} described in the evaluation section. The web app would allow for
+a user to input a mood either by setting the Circumplex parameters
+manually or potentially tieing in the use of an uploaded image or even
+NLU to analyse the mood of a sentence and then feed this into the model
+to generate an appropriate piece. The hosting of a pre-trained model
+would be relatively simple to achieve and again was not deemed to be of
+sufficient value to justify the time and resource cost during this
+project as it was not key to the initially laid out requirements.
+Despite this, it could potentially gain traction online and provide a
+much larger sample size for automated collection of qualitative
+assessment data regarding the model.
 
 \hypertarget{synthesiser-parameters}{%
 \subsubsection{Synthesiser Parameters}\label{synthesiser-parameters}}
 
 Other researchers have successfully trained a model to change parameters
 of a synthesiser during live performance based on a musician's input and
-learned preferences {[}\protect\hyperlink{ref-sommer2014towards}{36}{]}.
+learned preferences {[}\protect\hyperlink{ref-sommer2014towards}{34}{]}.
 Moving forward this would be an excellent way to add another dimension
 to the project's outputted music; existing studies into the sentiments
 behind different timbres and urgency or latency introduced by
@@ -1104,140 +1331,131 @@ generation,'' \emph{arXiv preprint arXiv:1809.04281}, 2018.
 {[}5{]} Y. Bayle, ``Deep learning for music chronicle.'' \\
 \url{https://github.com/ybayle/awesome-deep-learning-music}.
 
-\leavevmode\hypertarget{ref-yu2015multi}{}%
-{[}6{]} F. Yu and V. Koltun, ``Multi-scale context aggregation by
-dilated convolutions,'' \emph{arXiv preprint arXiv:1511.07122}, 2015.
-
-\leavevmode\hypertarget{ref-oord2016wavenet}{}%
-{[}7{]} A. van den Oord \emph{et al.}, ``WaveNet: A generative model for
-raw audio.'' 2016 {[}Online{]}. Available:
-\url{http://arxiv.org/abs/1609.03499}
-
-\leavevmode\hypertarget{ref-chang2017dilated}{}%
-{[}8{]} S. Chang \emph{et al.}, ``Dilated recurrent neural networks,''
-\emph{arXiv preprint arXiv:1710.02224}, 2017.
-
 \leavevmode\hypertarget{ref-annaw}{}%
-{[}9{]} A. Wszeborowska, ``Music Transcription with Python.'' \\
+{[}6{]} A. Wszeborowska, ``Music Transcription with Python.'' \\
 \url{https://www.youtube.com/watch?v=9boJ-Ai6QFM\&feature=youtu.be}.
 
 \leavevmode\hypertarget{ref-magentaonsetframes}{}%
-{[}10{]} \relax Google Brain Team, ``Magenta - Polyphonic Piano
+{[}7{]} \relax Google Brain Team, ``Magenta - Polyphonic Piano
 Transcription.'' \\
 \url{https://magenta.tensorflow.org/onsets-frames}.
 
 \leavevmode\hypertarget{ref-bereketai}{}%
-{[}11{]} M. Bereket and K. Shi, ``An ai approach to automatic natural
+{[}8{]} M. Bereket and K. Shi, ``An ai approach to automatic natural
 music transcription.''
 
 \leavevmode\hypertarget{ref-mbereket}{}%
-{[}12{]} \relax mbereket, ``Music Transcription Repository.'' \\
+{[}9{]} \relax mbereket, ``Music Transcription Repository.'' \\
 \url{https://github.com/mbereket/music-transcription}.
 
 \leavevmode\hypertarget{ref-sigtia2016end}{}%
-{[}13{]} S. Sigtia, E. Benetos, and S. Dixon, ``An end-to-end neural
+{[}10{]} S. Sigtia, E. Benetos, and S. Dixon, ``An end-to-end neural
 network for polyphonic piano music transcription,'' \emph{IEEE/ACM
 Transactions on Audio, Speech, and Language Processing}, vol. 24, no. 5,
 pp. 927--939, 2016.
 
-\leavevmode\hypertarget{ref-lakh}{}%
-{[}14{]} C. Raffel, ``Lakh midi dataset.'' \\
-\url{https://colinraffel.com/projects/lmd}.
-
 \leavevmode\hypertarget{ref-metacreation}{}%
-{[}15{]} M. Lab, ``Metacreation lab.'' \\
+{[}11{]} M. Lab, ``Metacreation lab.'' \\
 \url{http://metacreation.net/corpus-1/}.
 
 \leavevmode\hypertarget{ref-maestro2018}{}%
-{[}16{]} C. Hawthorne \emph{et al.}, ``Enabling factorized piano music
+{[}12{]} C. Hawthorne \emph{et al.}, ``Enabling factorized piano music
 modeling and generation with the maestro dataset,'' \emph{arXiv preprint
 arXiv:1810.12247}. 2018.
 
 \leavevmode\hypertarget{ref-notesequences}{}%
-{[}17{]} \relax Google Brain Team, ``NoteSequence Conversion Guide.'' \\
+{[}13{]} \relax Google Brain Team, ``NoteSequence Conversion Guide.'' \\
 \url{https://github.com/tensorflow/magenta/blob/master/magenta/scripts/README.md}.
 
 \leavevmode\hypertarget{ref-markovcomposer}{}%
-{[}18{]} \relax anbud, ``Markov composer (java application).'' \\
+{[}14{]} \relax anbud, ``Markov composer (java application).'' \\
 \url{https://github.com/anbud/MarkovComposer}.
 
 \leavevmode\hypertarget{ref-alextavgen}{}%
-{[}19{]} A. Tavgen, ``How we made music using neural networks.'' \\
+{[}15{]} A. Tavgen, ``How we made music using neural networks.'' \\
 \url{https://medium.com/@ATavgen/how-we-made-music-using-neural-networks-449a62b8a332}.
 
 \leavevmode\hypertarget{ref-karpathy}{}%
-{[}20{]} A. Karpathy, ``The unreasonable effectiveness of recurrent
+{[}16{]} A. Karpathy, ``The unreasonable effectiveness of recurrent
 neural networks.'' \\
 \url{http://karpathy.github.io/2015/05/21/rnn-effectiveness/}.
 
 \leavevmode\hypertarget{ref-magentavae}{}%
-{[}21{]} \relax Google Brain Team, ``Magenta - Music VAE Model.'' \\
+{[}17{]} \relax Google Brain Team, ``Magenta - Music VAE Model.'' \\
 \url{https://github.com/tensorflow/magenta/tree/master/magenta/models/music_vae}.
 
 \leavevmode\hypertarget{ref-magentapolyphony}{}%
-{[}22{]} \relax Google Brain Team, ``Magenta - Polyphony RNN Model.'' \\
+{[}18{]} \relax Google Brain Team, ``Magenta - Polyphony RNN Model.'' \\
 \url{https://github.com/tensorflow/magenta/tree/master/magenta/models/polyphony_rnn}.
 
 \leavevmode\hypertarget{ref-magentaimprov}{}%
-{[}23{]} \relax Google Brain Team, ``Magenta - Improvisational RNN
+{[}19{]} \relax Google Brain Team, ``Magenta - Improvisational RNN
 Model.'' \\
 \url{https://github.com/tensorflow/magenta/tree/master/magenta/models/improv_rnn}.
 
 \leavevmode\hypertarget{ref-deepjazz}{}%
-{[}24{]} J.-S. Kim, ``DeepJazz.'' \\
+{[}20{]} J.-S. Kim, ``DeepJazz.'' \\
 \url{https://github.com/jisungk/deepjazz}.
 
+\leavevmode\hypertarget{ref-oord2016wavenet}{}%
+{[}21{]} A. van den Oord \emph{et al.}, ``WaveNet: A generative model
+for raw audio.'' 2016 {[}Online{]}. Available:
+\url{http://arxiv.org/abs/1609.03499}
+
 \leavevmode\hypertarget{ref-Nayebi2015GRUVA}{}%
-{[}25{]} A. Nayebi and M. Vitelli, ``GRUV : Algorithmic music generation
+{[}22{]} A. Nayebi and M. Vitelli, ``GRUV : Algorithmic music generation
 using recurrent neural networks,'' 2015.
 
 \leavevmode\hypertarget{ref-mehri2016samplernn}{}%
-{[}26{]} S. Mehri \emph{et al.}, ``SampleRNN: An unconditional
+{[}23{]} S. Mehri \emph{et al.}, ``SampleRNN: An unconditional
 end-to-end neural audio generation model.'' 2016 {[}Online{]}.
 Available: \url{http://arxiv.org/abs/1612.07837}
 
 \leavevmode\hypertarget{ref-hilschermusic}{}%
-{[}27{]} M. Hilscher and N. Shahroudi, ``Music generation from midi
+{[}24{]} M. Hilscher and N. Shahroudi, ``Music generation from midi
 datasets.''
 
 \leavevmode\hypertarget{ref-wyse2018real}{}%
-{[}28{]} L. Wyse, ``Real-valued parametric conditioning of an rnn for
+{[}25{]} L. Wyse, ``Real-valued parametric conditioning of an rnn for
 interactive sound synthesis,'' \emph{arXiv preprint arXiv:1805.10808},
 2018.
 
 \leavevmode\hypertarget{ref-mkofler}{}%
-{[}29{]} M. Kofler, ``Deep Learning with TensorFlow.'' \\
+{[}26{]} M. Kofler, ``Deep Learning with TensorFlow.'' \\
 \url{https://towardsdatascience.com/deep-learning-with-tensorflow-part-3-music-and-text-generation-8a3fbfdc5e9b}.
 
 \leavevmode\hypertarget{ref-asimovinst}{}%
-{[}30{]} F. Brinkkemper, ``Analysing Six Deep Learning Tools for Music
+{[}27{]} F. Brinkkemper, ``Analysing Six Deep Learning Tools for Music
 Generation.'' \\
 \url{http://www.asimovinstitute.org/analyzing-deep-learning-tools-music/}.
 
 \leavevmode\hypertarget{ref-nayebi2015gruv}{}%
-{[}31{]} A. Nayebi and M. Vitelli, ``Gruv: Algorithmic music generation
+{[}28{]} A. Nayebi and M. Vitelli, ``Gruv: Algorithmic music generation
 using recurrent neural networks,'' \emph{Course CS224D: Deep Learning
 for Natural Language Processing (Stanford)}, 2015.
 
 \leavevmode\hypertarget{ref-fiala}{}%
-{[}32{]} \relax Fiala, ``Generating Audio with Deep Learning.'' \\
+{[}29{]} \relax Fiala, ``Generating Audio with Deep Learning.'' \\
 \url{http://fiala.uk/notes/deep-learning-and-sound-02-generating-audio}.
 
-\leavevmode\hypertarget{ref-magentamidi}{}%
-{[}33{]} \relax Google Brain Team, ``Magenta - MIDI I/O.'' \\
-\href{https://github.com/tensorflow/magenta/tree/master/magenta/interfaces/midi\%0A}{https://github.com/tensorflow/magenta/tree/master/magenta/interfaces/midi
-}.
+\leavevmode\hypertarget{ref-deepsent}{}%
+{[}30{]} Y. Bayle, ``Deep learning for music chronicle.'' \\
+\url{https://github.com/muchen2/DeepSent}.
 
-\leavevmode\hypertarget{ref-vmpk}{}%
-{[}34{]} \relax VMPK, ``Software MIDI Controller.'' \\
-\url{http://vmpk.sourceforge.net}.
+\leavevmode\hypertarget{ref-russell1980circumplex}{}%
+{[}31{]} J. A. Russell, ``A circumplex model of affect.'' \emph{Journal
+of personality and social psychology}, vol. 39, no. 6, p. 1161, 1980.
 
-\leavevmode\hypertarget{ref-fluidsynth}{}%
-{[}35{]} \relax FluidSynth, ``Software Synthesiser.'' \\
-\url{http://www.fluidsynth.org/}.
+\leavevmode\hypertarget{ref-yu2015multi}{}%
+{[}32{]} F. Yu and V. Koltun, ``Multi-scale context aggregation by
+dilated convolutions,'' \emph{arXiv preprint arXiv:1511.07122}, 2015.
+
+\leavevmode\hypertarget{ref-chang2017dilated}{}%
+{[}33{]} S. Chang \emph{et al.}, ``Dilated recurrent neural networks,''
+\emph{arXiv preprint arXiv:1710.02224}, 2017.
 
 \leavevmode\hypertarget{ref-sommer2014towards}{}%
-{[}36{]} N. Sommer and A. Ralescu, ``Towards a machine learning based
+{[}34{]} N. Sommer and A. Ralescu, ``Towards a machine learning based
 control of musical synthesizers in real-time live performance,'' in
 \emph{Proc. Of the 25th modern artificial intelligence and cognitive
 science conf., spokane, washington, usa}, 2014, pp. 61--67.

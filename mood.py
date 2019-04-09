@@ -11,8 +11,6 @@ import config
 
 with open("nnet_models/arousal_regressor_v1.pickle", "r") as file:
 	arousal_regressor = pickle.load(file)
-with open("nnet_models/pace_regressor_v1.pickle", "r") as file:
-	pace_regressor = pickle.load(file)
 with open("nnet_models/valence_regressor_v1.pickle", "r") as file:
 	valence_regressor = pickle.load(file)
 
@@ -66,34 +64,23 @@ def analyse(filename, name):
 		mfccs_mat[i] = mfccs.flatten()
 
 	# feed the data into regressors
-	pace_regressor_result = pace_regressor.predict(mfccs_mat) + 1.0
 	arousal_regressor_result = arousal_regressor.predict(mfccs_mat) + 1.5
 	valence_regressor_result = valence_regressor.predict(mfccs_mat) + 1.5
 
 	# shrink overrated scores
-	pace_regressor_result[np.where (pace_regressor_result>2.0)[0]] = 2.0
-	pace_regressor_result[np.where (pace_regressor_result<0.0)[0]] = 0.0
 	arousal_regressor_result[np.where(arousal_regressor_result>3.0)[0]] = 3.0
 	arousal_regressor_result[np.where(arousal_regressor_result<0.0)[0]] = 0.0
 	valence_regressor_result[np.where(valence_regressor_result>3.0)[0]] = 3.0
 	valence_regressor_result[np.where(valence_regressor_result<0.0)[0]] = 0.0
 
 	# calculate mean results
-	pace_score = np.mean (pace_regressor_result)
 	arousal_score = np.mean (arousal_regressor_result)
 	valence_score = np.mean (valence_regressor_result)
 
 	# calculate result ratios
-	pace_fast_ratio = len (np.where (pace_regressor_result>1.33)[0]) / float (len (pace_regressor_result))
-	pace_slow_ratio = len (np.where (pace_regressor_result<0.66)[0]) / float (len (pace_regressor_result))
-	pace_mid_ratio = 1. - pace_fast_ratio - pace_slow_ratio
-
 	arousal_intense_ratio = len (np.where (arousal_regressor_result>2.0)[0]) / float (len (arousal_regressor_result))
-	print(arousal_intense_ratio)
 	arousal_relaxing_ratio = len (np.where (arousal_regressor_result<1.0)[0]) / float (len (arousal_regressor_result))
-	print(arousal_relaxing_ratio)
 	arousal_mid_ratio = 1. - arousal_intense_ratio - arousal_relaxing_ratio
-	print(arousal_mid_ratio)
 
 	valence_happy_ratio = len (np.where (valence_regressor_result>2.0)[0]) / float (len (valence_regressor_result))
 	valence_sad_ratio = len (np.where (valence_regressor_result<1.0)[0]) / float (len (valence_regressor_result))
@@ -101,12 +88,8 @@ def analyse(filename, name):
 
 	result_dict = {
 		"location": filename, 
-		"pace_score": pace_score / 2.0 * 100.0,
 		"arousal_score": arousal_score / 3.0 * 100.0,
 		"valence_score": valence_score / 3.0 * 100.0,
-		"pace_fast_ratio": pace_fast_ratio * 100.0,
-		"pace_slow_ratio": pace_slow_ratio * 100.0,
-		"pace_mid_ratio": pace_mid_ratio * 100.0,
 		"arousal_intense_ratio": arousal_intense_ratio * 100.0,
 		"arousal_relaxing_ratio": arousal_relaxing_ratio * 100.0,
 		"arousal_mid_ratio": arousal_mid_ratio * 100.0,
@@ -114,8 +97,8 @@ def analyse(filename, name):
 		"valence_sad_ratio": valence_sad_ratio * 100.0,
 		"valence_neutral_ratio": valence_neutral_ratio * 100.0
 	}
-	print(result_dict)
-	# np.save(os.path.join(config.MOOD_DIR, name), result_dict)
+	# print(result_dict)
+	np.save(os.path.join(config.MOOD_DIR, name), result_dict)
 
 
 
