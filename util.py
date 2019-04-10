@@ -5,8 +5,7 @@ from collections import defaultdict
 import torch
 from torch.autograd import Variable
 
-from config import *
-import sys
+import sys, config
 
 def copy_in_params(net, params):
     """ Copies the tensor data from params to net """
@@ -92,8 +91,8 @@ def convert_time_evt_to_sec(evt):
     """
     Convert time shift event to seconds
     """
-    tick_bin = evt - TIME_OFFSET
-    seconds = TICK_BINS[tick_bin] / TICKS_PER_SEC
+    tick_bin = evt - config.TIME_OFFSET
+    seconds = config.TICK_BINS[tick_bin] / config.TICKS_PER_SEC
     return seconds
 
 def seconds_to_events(seconds):
@@ -102,7 +101,7 @@ def seconds_to_events(seconds):
     represents the given time interval.
     """
     # Number of ticks in WildeNet tick units
-    standard_ticks = round(seconds * TICKS_PER_SEC)
+    standard_ticks = round(seconds * config.TICKS_PER_SEC)
 
     # Add in seconds
     while standard_ticks >= 1:
@@ -112,22 +111,22 @@ def seconds_to_events(seconds):
         if tick_bin is None:
             break
 
-        evt_index = TIME_OFFSET + tick_bin
-        assert evt_index >= TIME_OFFSET and evt_index < VELOCITY_OFFSET, (standard_ticks, tick_bin)
+        evt_index = config.TIME_OFFSET + tick_bin
+        assert evt_index >= config.TIME_OFFSET and evt_index < config.VELOCITY_OFFSET, (standard_ticks, tick_bin)
         yield evt_index
-        standard_ticks -= TICK_BINS[tick_bin]
+        standard_ticks -= config.TICK_BINS[tick_bin]
 
         # Approximate to the nearest tick bin instead of precise wrapping
-        if standard_ticks < TICK_BINS[-1]:
+        if standard_ticks < config.TICK_BINS[-1]:
             break
 
 def find_tick_bin(ticks):
     """
     Returns the tick bin this belongs to, or None if the number of ticks is too little
     """
-    for b, bin_ticks in enumerate(reversed(TICK_BINS)):
+    for b, bin_ticks in enumerate(reversed(config.TICK_BINS)):
         if ticks >= bin_ticks:
-            return len(TICK_BINS) - 1 - b
+            return len(config.TICK_BINS) - 1 - b
 
     return None
 

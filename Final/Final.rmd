@@ -195,9 +195,7 @@ A small survey was devised and carried out in order to test a subject's ability 
 
 This survey was discussed with the project's supervisor but was deemed to be satisfactory in terms of any ethical considerations; no further justification or recourse was necessary to ensure the ethicacy of it as a means of evaluation.
 
-# Technical Component
-
-## MIDI Transcription
+# MIDI Transcription
 
 In order to determine which MIDI transcriptions were best, a number of factors were considered. Some preliminary testing was done by first designing a sequence of MIDI notes which could then be played internally and exported as an audio file. These MIDI notes acted as a ground truth. Within these test files, chords and complex structures were included as well as different levels of white noise applied to them. From here different techniques could be tried in order to decide which would be best:
 
@@ -206,13 +204,61 @@ In order to determine which MIDI transcriptions were best, a number of factors w
 
 Based on the transcriptions both create it is possible to compare them qualitatively. Magenta’s approach is decisive in its choice of notes and often more confident when it comes to timing due to its training instilling a greater sense of tempo and structure in its transcriptions. WaoN is delicate and plays with wide dynamic range, but often incorporates more false positives in terms of ghost notes (notes that should not be present but are determined to be through frequency clashes, overtones etc.). Both seemed to be viable and offered slightly different versions of the training data to be used in training the compositional engine, and as both were viable it was decided that both should be used. Magenta's model shows great promise and it is likely that with the correct training data this approach would be far superior to WaoN in fixed domain transcriptions (i.e. training the model on a dataset of ground truth transcriptions of a certain genre before using it to transcribe more of that genre, so that it might understand the 'rules' of transcribing genres other than classical more effectively). I have no doubt that in the next few years applications such as WaoN will be largely eschewed in favour of modern machine learning approaches similar to what has happened to the field of Computer Vision over the past decade or so.
 
-### Implementation
+WaoN has numerous tuning parameters. The most regularly used were:
 
-Most of the code relevant to this section is present in the `dataset.py` and `conversion.py` files included with this document. 
+- `-n` for changing the sampling window from the input file, higher number results in fewer samples, as `-n` corresponds to the number of samples in a single step to be analysed
+- `-c` allows the user to set the base-10 logarithm of the cut-off ratio upon which velocity of a note should be scaled, i.e. lowering its value allows for weaker notes to be captured
+- `-r` does the same but relative to the average velocity, this can be used to remove noisy notes from the outputted MIDI
 
-## Sentiment Analysis
+It was found that decreasing `-c` from its default and increasing `-r` along with a relatively large sampling window `-n` gave the best results with the fewest noisy notes and came closest to emulating the original pieces. These outputs still often included many more ghost notes than Magenta's outputs, but sometimes captured complex structures that Magenta did not, contributing to the final decision to use both approaches in tandem.
 
-In order to satisfy the requirements of the proejct regarding sentiment, it was necessary to first extract the sentiment from each component of the training data corpus and then formulate a means of attaching this sentiment to the representation of the training data to be fed into the model during training.
+## Building a Training Corpus
+
+WaoN and Magenta's Onset Frames model were used to convert a personal library of ambient music containing approximately 1,400 pieces spanning 150 hours into MIDI.
+
+The model was also trained on classical music to make it more comparable to existing offerings, and to reduce some of the issues regarding noisy training data that creating an original corpus presented. The MAPS database was used which is potentially the largest of its kind, providing 1,200 pieces spanning 100 hours in `.wav` format alongside their ground truth MIDI files (the audio and MIDI were recorded together using an electronic piano and microphones, so no MIDI transcription took place like the processes described above, MAPS describes the 'perfect' training set for this kind of model). The raw audio could be used to analyse mood which could then be associated with the MIDI files as before.
+
+## Building an Effective Representation
+
+Most of the code relevant to this section is present in the `dataset.py` and `conversion.py` files included with this document.
+
+After deciding on the raw training data to use, a schema was required to represent the selected MIDI files in a tensor format so that they could be used to train the model. MIDI was converted to tensors by iterating through their files using the python package `mido` [@mido]. It is useful to consider the format of a MIDI file in that they are a stream of messages containing:
+
+- A message class, usually a `Note On` or `Note Off` event, but could also be `End of Track`, `Set Tempo` etc.
+- An affected note where applicable, in the range of 0 to 127, this is the standard range of MIDI as a format and represents around 10 octaves
+- A velocity associated with `Note On` events, ranging from 0 to 127
+- A tick value corresponding to the number of MIDI ticks that have passed since the *previous* event
+
+`mido` allows for iteration through MIDI events in order to generate a sequence of numbers representing a MIDI file's events. In the resulting sequence, the values 0 to 127 are reserved for notes, 128 to 159 are reserved for time and 160 to 192 are reserved for velocity. Time and velocity are packed into bins for performance reasons rather than trying to attempt to represent all possible times and velocity levels; 32 bins were deemed sufficient. Roughly, a new number is appended to the sequence first for the time when an event occurs, then the velocity of said event, then the note itself. If a time exceeds the length of time represented by the $32^{nd}$ time bin, additional numbers are appended to the sequence representing the remaining time.
+
+A MIDI file containing the following events would be converted as below:
+
+$$\begin{gathered}
+\text{(Note On Event, Note = 55, Velocity = 90, Tick = 831)} \\
+\text{(Note On Event, Note = 67, Velocity = 85, Tick = 3)}\\
+\cdots\\
+\text{Becomes : } [159, 182, 55, 181, 67, \dots]
+\end{gathered}$$
+
+Note that a tick value of 3 is not sufficient to warrant the inclusion of another time-bucketed event meaning that there is no 'gap' between the playing of notes 55 and 67 in this representation. Ticks can be converted to some number of milliseconds meaning that these small changes in time resolution through binning are imperceptible to us as listeners. It was relatively simple to test the efficacy of this representation by converting from MIDI and back and then comparing the input and output MIDI files.
+
+Once the training data is in this form it is randomly sampled into equal length sequences for training purposes. The resulting array representations are one hot encoded to turn them into two-dimensional tensors before being fed into the model in batches. This leads to each element of an input sequence having the dimension:
+
+$$\begin{aligned}
+D_{\text{input}} &= \text{Number of Possible MIDI Notes} + \text{Buckets for time} + \text{Buckets for Velocity}\\
+&= 128 + 32 + 32\\
+&= 192
+\end{aligned}$$
+
+The above corresponds to the dimension of a single event vector in a training sequence. In practice, the three-dimensional tensors created through batching and random sampling of training data have the following dimension:
+
+$$\text{Batch Size} \times \text{Training Sequence Length} \times D_{\text{input}}$$
+
+A mood vector is inputted separately and eventually merged with the training sequences by the model using a linear unsqueeze operation to distribute it across the first layers.
+
+# Sentiment Analysis
+
+In order to satisfy the requirements of the project regarding sentiment, it was necessary to first extract the sentiment from each component of the training data corpus and then formulate a means of attaching this sentiment to the representation of the training data to be fed into the model during training.
 
 Much of the technical work regarding extraction of sentiment from audio follows the work done by Mu Chen and their DeepSent project [@deepsent]. This code was used as a basis upon which a vector of mood values could be generated automatically for each element of a training data set and then associated with the accompanying MIDI files to be used in training. The sentiment is measured with respect to an arousal-valence emotional model known as the Circumplex model [@russell1980circumplex], with values being determined for both axes of arousal and valence.
 
@@ -233,44 +279,103 @@ S_V &= \{\text{Scores assigned to each input by the valence regressor model}\} \
 
 In both cases it can be seen that ratios are calculated through taking the top and bottom few scores and calculating the ratio of each above and below boundaries which were formulated through testing and with respect to the original work. It is worth noting that all scores fall between a range of 0 and around 5, but extreme values are clipped to 3 as they do not appear and are often spurious.
 
-### Implementation
+## Implementing Signal Processing Technique and Returning the Results in a Usable Form
 
 Most of the code relevant to this section is included in the `mood.py` file included with this document.
 
 Each piece to be analysed is trimmed of its start and end (which are likely to be sparse and potentially irregular in terms of their content when compared to the main body of a piece occurring around its midpoint) to leave the middle 70% of the data. This raw data is then windowed into 5-second long frames of samples, with a step of 0.5 seconds between the starting points of each (such that there is overlap between frames). Within each of these there is then a further decomposition into 25ms sub-frames that are transformed into an array of Mel-frequency cepstral coefficients (MFCCs). The matrices representing the coefficients for each sub-frame are then flattened and fed into a 3-layer neural network regressor. The neural networks associate patterns common within certain moods based upon what was learnt from numerous large datasets used for training these models.
 
+ADD DIAGRAM? HARD
+
 These ratios are then packed into a 6 item vector and associated with each of the training MIDI files to be loaded during training. Thresholding as a means of segmentation was implemented by setting all ratios greater than 50 to 1 and those below 50 to 0. This offered computational improvements but slightly decreased the effectiveness of the mood transfer to training pieces in the opinion of the author and some survey participants. Due to the subjectivity of this part of the output, it was hard to assess which approach was more effective in capturing mood and so the simpler, less computationally intense thresholding option was chosen. This resulted in a six element *binary* vector representing mood associated with each item in the training corpus.
 
-## Recurrent Neural Networks and Their Variants
+# Creating a Recurrent Model for Musical Composition
 
-### Recurrent Neural Network Justifications and Definitions
+## Recurrent Neural Networks
 
-Perhaps the most common form of artificial neural network is the *feedforward* network which utilise connected layers of neurons and activation functions to approximate different functions through the learning of parameters and weights. Their main limitation in this context is that they require their inputs to be of a fixed dimension and thus are not well suited to dynamic data of varying size such as a sequence $(x_i)_{1\le i\le T}$ of time stepped note states representing a composition where $T$ is the length of the piece.
+Perhaps the most common form of artificial neural network is the *feedforward* network which utilise connected layers of neurons and activation functions to approximate different functions through the learning of parameters and weights. Their main limitation in this context is that they require their inputs to be of a fixed dimension and thus are not well suited to dynamic data of varying size such as a sequence $(x_t)_{1\le t\le T}$ of time stepped note states representing a composition where $T$ is the length of the piece.
 
 It is assumed that this type of sequential data has some system of dependence on its prior and potentially future elements and so it would not be appropriate to simply input each element of a temporal sequence into a feedforward network during training. It can clearly be seen by observing musical data and considering knowledge of musical harmony (songs are often in a certain and consistent key which may be inferred by chords and notes present throughout the piece) that the input at each time step is likely to be dependent on other time steps.
 
-This class of situations led to the development of **Recurrent Neural Networks** which introduce recurrent connections between layers over a temporal dimension allowing the network to exhibit dynamic behaviour in this dimension.
+This class of situations led to the development of **Recurrent Neural Networks** which introduce recurrent connections between layers over a temporal dimension allowing the network to exhibit dynamic behaviour over time.
 
-It is now possible to provide some notation specific to this project regarding RNNs. A sequence of inputs is defined as above, with the vector corresponding to the sequence at time $i$ denoted as $x_i\in \{0,1\}^{D_{\text{input}}}$. 
+It is now possible to provide some notation specific to this project regarding RNNs. A training input is defined [as before](#buildinganeffectiverepresentation), with the vector corresponding to the sequence at time $t$ denoted as $x_t\in \{0,1\}^{D_{\text{input}}}$. At each time step, a layer's input $x_t$ and its previous state $h_{t-1}$ are used to calculate a new value $h_t$ for each hidden layer $h\in\{\text{Hidden Layers}\}$ and also inform the outputs for that time step $y_t$. Mathematically, this relationship is as follows:
 
-At the start of the process all weights and activations are initialised to some value. At each time step following this the new activations for each hidden layer are calculated using a combination of the current time steps input and the previous activations. This process highlights the possibility of unrolling of an RNN into a feedforward network or DAG representation as shown in the figure below.
+SOURCE, ALSO SHOULD I TALK MORE ABOUT BACK PROP AND HOW IT ACTUALLY LEARNS, DONT WANT TO COMPLETELY REWRITE RNN PAPERS HAHA
+
+$$\begin{aligned}
+h_t &= \phi(W_{xh} x_t + W_{hh} h_{t-1} + b_{xh}) \\
+y_t &= W_{hy}(h_t) + b_{hy}
+\end{aligned}$$
+
+Where:
+
+- $\phi$ is the chosen element-wise activation function for the network
+- $W_{xy}$ represents the weight parameters between layers $x$ and $y$
+- $b_{xy}$ is the bias parameter between layers $x$ and $y$
+
+In this case and all proceeding cases, where there are multiple hidden layers, assume that the input for the $n^{\text{th}}$ layer $h^{(n)}_t$ is $x_t = h^{(n-1)}_t$.
 
 ![Recurrent connections between the hidden layers of a network](Images/rnn.png)
 
+This process is illustrated in the figure above and can be described by considering that at the start of the process all weights and activations are initialised to some value. At each time step following this, the new activations for each hidden layer are calculated using a combination of the current time step's input and that layer's previous activations. This process highlights the possibility of unrolling an RNN into a DAG representation as shown in the figure below.
+
 ![Identical to the previous figure in meaning but with the recurrent connections unrolled along the time axis](Images/unrolledrnn.png)
 
-The most important property of this class of network is their *time invariance*, in that at a given time step the networks activations and learned properties can all be considered relative to previous time steps. The activations at one time step influence the next. The ability to recurrently input into the network is the clear reason for its usage in this context over traditional feedforward networks.
+The potentially most important property of this class of networks is their *time invariance*, in that at a given time step the networks activations and learned properties can all be considered relative to previous time steps. The activations at one time step influence the next. The ability to recurrently input into the network is the clear reason for its usage in this context over traditional feedforward networks.
 
-Despite this time invariance and flexibility in terms of the dimension of their inputs, they lack long term coherence meaning they often fail when complex dependencies are built up and different temporal structures must be captured. They are susceptible to exploding or vanishing gradients over time due to repeated and recurrent backpropagation, i.e. tiny values will often compound and be multiplied together leading to the network getting stuck or significantly slowing its learning. These issues have inspired a number of variants aiming to mitigate these problems and form the basis of most current approaches to musical composition. They are discussed in the sections below.
+Despite this time invariance and flexibility in terms of the dimension of their inputs, they lack long term coherence meaning they often fail when complex dependencies are built up and different temporal structures must be captured. They are susceptible to exploding or vanishing gradients over time due to repeated and recurrent backpropagation, i.e. tiny values will often compound and be multiplied together leading to the network getting stuck or significantly slowing its learning. These issues have inspired a number of variants aiming to mitigate these problems and form the basis of most current approaches to musical composition. Through considerable research, it was decided that LSTMs and GRUs should be trialled against each other as part of this project's model architecture. They are both discussed in the sections below.
 
 ### Long Short-Term Memory Recurrent Units
 
+The LSTM unit was first proposed in 1999 [@gers1999learning], though the version formulated here includes some improvements based on more recent research [@sak2014long; @greff2017lstm; @zebin2018human], the most notable addition is that of the *forget gate*. LSTMs introduce a means of allowing long-term dependencies to be captured by RNNs through introducing three 'gates' which each interact with a memory state and previous hidden activations passed through time:
+
+- The **forget gate** is a scaling factor
+$$f_t = \sigma(W_{if} x_t + b_{if} + W_{hf} h_{(t-1)} + b_{hf})$$
+where $\sigma(x) = 1 / (1 + e^{-x})$ is the sigmoid function; its values fall in $[0,1]$ and control the extent to which the previous cell memory state $c_{t-1}$ is kept
+- The **input gate** is a scaling factor
+$$i_t = \sigma(W_{ii} x_t + b_{ii} + W_{hi} h_{(t-1)} + b_{hi})$$
+where the terms are self-explanatory; its values fall in $[0,1]$ and control the extent to which the new input $x_t$ flows into the unit
+- The **output gate** is a scaling factor
+$$o_t = \sigma(W_{io} x_t + b_{io} + W_{ho} h_{(t-1)} + b_{ho})$$
+where the terms are self-explanatory; its values fall in $[0,1]$ and control the extent to which the new candidate memory state $c^*_t$ is used to compute the new activation $h_t$
+
+The candidate memory state $c^*_t$ is calculated as
+$$c^*_t = \tanh(W_{ic^*} x_t + b_{ic^*} + W_{hc^*} h_{(t-1)} + b_{hc^*})$$
+which can then be multiplied element-wise with the input gate scaling factor and added with the result of the forget gate scaling factor's element-wise multiplication with the previous memory state:
+$$c_t = f_t \odot c_{t-1} + i_t \odot c^*_t$$
+Finally, the new / current hidden activation state can be found as:
+$$h_t = o_t \odot \tanh(c_t)$$
+All of these weights and bias parameters are updated during training via back-propagation as before and initialised in this instance from the uniform distribution:
+$$U(-\sqrt{k}, \sqrt{k}),\quad k = \frac{1}{\text{Hidden Layer Size}}$$
+
+The diagram below illustrates the LSTM and the flow of data through it diagrammatically.
+
 ![A single Long Short-Term Memory Unit taking input at a single time step](Images/lstm.png)
+
+Note that there are many small variations on the LSTM concept; the mathematical formulation was written here in context of PyTorch's implementation [@pytorchlstm] and the figure reflects this.
 
 ### Gated Recurrent Units
 
+The GRU was first proposed in 2014 [cho2014learning]. It offers a similar set of operations to try and mitigate the aforementioned issues with RNNs. It does so by introducing two 'gates' in a slightly simpler configuration to the LSTM:
+
+- The **reset gate** is a scaling factor
+$$r_t = \sigma(W_{ir} x_t + b_{ir} + W_{hr} h_{(t-1)} + b_{hr})$$
+where $\sigma(x) = 1 / (1 + e^{-x})$ is the sigmoid function; its values fall in $[0,1]$ and control the extent to which the previous cell memory state $c_{t-1}$ is kept
+- The **update gate** is a scaling factor
+$$z_t = \sigma(W_{iz} x_t + b_{iz} + W_{hz} h_{(t-1)} + b_{hz})$$
+where the terms are self-explanatory; its values fall in $[0,1]$ and control the extent to which the unit's activation is updated
+
+The candidate activation state $h_t^*$ is calculated as
+$$h_t^* = \tanh(W_{ih^*} x_t + b_{ih^*} + r_t (W_{hh^*} h_{(t-1)} + b_{hh^*}))$$
+which can then be used in calculating the new / current activation via a linear interpolation of the candidate activation and the previous activation:
+$$h_t = h_{t-1} (1 - z_t) + h_t^* z_t$$
+
+The diagram below illustrates the GRU and the flow of data through it diagrammatically.
+
 ![A single Gated Recurrent Unit taking input at a single time step](Images/gru.png)
 
+Note that there are many small variations on the GRU concept; the mathematical formulation was written here in context of PyTorch's implementation [@pytorchgru] and the figure reflects this.
 
 ## Dilation
 
@@ -280,48 +385,43 @@ It offers an alternative to other techniques often relying on down-sampling whic
 
 ![Different dilation factors (represented by the value of D) illustrated on a 2-dimensional input](Images/dilation2d.png){width=70%}
 
-This technique has shown to be very effective in aiding dense prediction problems (predicting labels for each pixel in an image, or with respect to this project's proposed equivalence of predicting on or off states for each note on the piano over a series of time steps). Deepmind researchers applied a similar approach within their own convolutional network for WaveNet which is the first documented use of dilation in the musical composition domain [@oord2016wavenet]. Their results found that again the addition of dilation conceptually increased the accuracy and effectiveness of their model.
+This technique has shown to be very effective in aiding dense prediction problems (predicting labels for each pixel in an image, or with respect to this project's proposed equivalence of predicting on or off states for each note on the piano over a series of time steps). Deepmind researchers applied a similar approach within their own convolutional network for WaveNet which is the first documented use of dilation in the musical composition domain [@oord2016wavenet]. Their results found that again the addition of dilation increased the accuracy and effectiveness of their model.
 
-A paper was published linking this concept with recurrent neural networks in 2017 by Chang et al. [@chang2017dilated]. This paper forms the basis for the justification of using dilation in the model present in this project; this project's compositional model is potentially the first use of dilated recurrent neural networks in the musical composition domain.
+A paper was published linking this concept with recurrent neural networks in 2017 [@chang2017dilated]. This paper forms the basis for the justification of using dilation in the model present in this project; this project's compositional model is potentially the first use of dilated recurrent neural networks in the musical composition domain. Dilation's purpose in this context is to allow a model to learn at multiple temporal resolutions and capture the complexities of musical composition that exist naturally through its formulation in terms of half and double length notes, beats, bars etc. This immediately lends itself to dilation POWERS OF 2.
 
 ![An example of a three-layer DRNN with dilation factors 1, 2, and 4](Images/dilatedrnn.png){width=100%}
 
-## Bi-Axial Architectures
+![The parallels between musical temporal structure and a DRNN's structure are clear](Images/Metric_levels.png){width=70%}
 
-Consideration of musical theory is the main inspiration for the following section. There is a large body of documentation and research surrounding musical theory which a reader might find helpful in adding context to this paper; the essentials are included for convenience.
+Mathematically, dilation can be achieved by simply reconnecting the network's layers such that all of the aforemenetioned recurrent operations are done with respect to $t-D_l$ rather than $t-1$ where $D_l$ is the dilation factor of layer $l$. Enhanced parallelisation can be achieved by computing dilated layers together at the same time as illustrated below:
+
+![The four chains of recurrent units shown at the top of this diagram can be computed in parallel rather than at separate time steps, as all of them occur across the same distance in time, this can have huge performance implications where parallel computation is enabled such as when utilising GPUs to train a model](Images/dilatedrnnparallel.png)
+
+## Introducing Harmonic Invariance
+
+The consideration of musical theory is the main inspiration for the following section. There is a large body of documentation and research surrounding musical theory which a reader could investigate should they wish to supplement this paper with additional context. However, the essentials and relevant points are included for convenience.
 
 In general, compositions are written with respect to a **key** which roughly determines the scales upon which harmonics and chords for a piece are constructed. Each key is simply a transformation or rather a transposition of another through some number of shifts up or down.
 
-![Diagram showing the circle of fifths](Images/flypaperfifths.png){height=40%}
+![Diagram illustrating the Circle of Fifths, note that going up by a 5th (5 notes) is equivalent to going down by 4 notes and vice versa. Source: FlyPaper](Images/flypaperfifths.png){height=40%}
 
 ![Example of a transposition from F major to B flat major and D major](Images/transp3b.png){height=30%}
 
-This highlights a potential issue with many pre-existing attempts at composition using neural networks and limitations of some distribution estimators such as Restricted Boltzmann Machines and Neural Autoregressive Distribution Estimators. All of the harmonics present in music (aside from some intentional dissonances) are entirely relative by nature. For example, if we represent all possible played MIDI notes as a binary vector where 1 represents a played note and 0 represents the lack of a note at this location. A major triad chord can be represented as:
+This highlights a potential issue with many pre-existing attempts at composition using neural networks and limitations of some distribution estimators such as Restricted Boltzmann Machines and Neural Autoregressive Distribution Estimators. Many modern approaches utilise these units in their models, but they involve a fixed distribution which generates probabilities for each note deterministically, i.e. one probability for each possible note. 
+
+All of the harmonics present in music (aside from some intentional dissonances) are entirely relative by nature. For example, if we represent all possible played MIDI notes as a 128-element binary vector where 1 represents a played note and 0 represents the lack of a note at this location. A major triad chord can be represented as:
 
 $$... 0100010010 ...$$
 
-Regardless of its position in the input sequence. It is know that the relative position of notes represented by some subsequence of an input matching the locations above would result in a major triad of some key. This highlights the property of *harmonic invariance* in music 
+This arrangement forms a major triad with respect to some root note / key regardless of its absolute position in the input sequence; the only rules for creating a major triad is to start with a note, then add its major third (always 4 keys to the right of the root) and perfect fifth (always a further three keys from the major third). This highlights the property of **harmonic invariance** in music. Many of the aforementioned solutions including most of the ones discussed in the section on [pre-eminent solutions](#competitiveexistingsolutions) utilise architectures which mean that they would have to learn each transposed chord separately. This immediately seems to ignore this concept of harmonic invariance and relativity in musical scoring which is key to having a model understand its rules beyond a single key.
 
-Time invariance 
+Inspiration can be drawn once more from convolutional neural networks which achieve invariance in analysing images by utilising multiple kernel functions which each learn relative features in the data as they are passed over the image. To achieve this, the input data is cross-correlated meaning that the output is identical for inputs $u_{(i + x)}$ and $v_{(j+x)}$, for all fixed $i,j$ and any offset $x$.
 
+The idea is to apply this concept to the model such that all inputs of the same offset are treated equally to each other, by considering their positions relatively rather than absolutely.
 
+## The Model Itself
 
-
-5. Image processing has some parallels to my approach as well. I wanted to introduce more concepts of relativity into my model over absolute structures beyond just the time thing; many existing solutions include networks where each note corresponds to a specific node. However, music is more of a relative set of rules in that pieces can be transposed up or down in key and you can always construct chords and melodies relative to that key. So I wanted my network to be able to capture this understanding rather than just being able to copy certain chords it learns; this way it can perform in a more varied and realistic way. Image processing has a similar idea already in which a kernel is used to take a neighbourhood of pixels in an image and carry out some transformation on them. My idea was to do this with an octave above and below each note, feeding this neighbourhood into its own network which would then focus only on the relative position of notes to learn harmonic structure without worrying which note was actually being played.
-
-
-## The Model
-
-
-
-
-## Design
-
-## Implementation
-
-## Theory
-
-
+The culmination of all of this results in a network consisting of Dilated GRU or LSTM units, tied such that they are invariant temporally and harmonically. Both GRU and LSTM units were evaluated due to their similarities and seeming applicability to the task.
 
 ## Testing
 
@@ -342,6 +442,10 @@ Presentation and discussion of results/evaluation.
 
 # Evaluation
 
+as well as from JSB Chorales, MuseData, Nottingham and Piano-Midi.de which are all relatively standard datasets used for this task
+
+One of the main issues is the propogation of noise or errors throughout the system, starting with MIDI transcription
+
 ## Conclusions
 
 A favourable configuration was found though further investigation would be required. The function aimed for is a complex one and it is still somewhat unclear how many neurons might work best in modelling the full potential. Here resources of time and computational power must be considered. 
@@ -358,37 +462,38 @@ Insert the tables of comparisons with existing solutions
 
 
 
-## Future Work
+# Future Work
 
-### Improved Data Collection and Corpus Creation
+## Improved Data Collection and Corpus Creation
 
 As has already been alluded to, perhaps the biggest issue faced throughout this project has been one of data. New architectures were developed and tested iteratively but all of them faced similar limitations due to a lack of data. The model itself proved to be close to state-of-the-art through its training performance and quantitative evaluation. However, many of the pieces still seemed to leave something to be desired; especially when the created ambient corpus was used 
 
+GPT-2 [@radford2018language]
 
-### Sentimental Input from Images
-
-
-### Alternative Architectures
-
-Look into SRUs would be cool, potential improvement over GRUs, moving averages present potential relevance to music as a format.
+## Sentimental Input from Images
 
 
-### Performance and Interactivity
+## Alternative Architectures
+
+Some other recent developments in the space of recurrent units could offer improvements to the current architecture. It would be desirable to further investigate Statistical Recurrent Units which are similar in practice to GRUs but substitute . Moving averages are promising for again maintaining long term coherence and effectively representing long term dependencies in the training data.
+
+
+## Performance and Interactivity
 
 This project proves that additional features can effectively be incorporated into the model. Indeed, a mood may be input at the time of generation in order to influence the model's output. A natural extension of this would be to provide additional ways to interact with the model at the point of generation through giving a user the chance to manually inspire the model. This could potentially be as intuitive as allowing a user to play a short number of notes or chords and have these set the initial weightings for the network, which would presumably go on to compose a whole piece from these starting conditions. This would certainly be possible given a greater corpus of training data to allow for the model to have a greater understanding of shorter inputs; could allow for musicians to use the model creatively in terms of inputting short ideas into it and exploring its responses.
 
 Many of the Magenta team's efforts since the launch of interactive TensorFlow.js have incorporated ideas such as these; it is relatively simple to hook up a MIDI interface into the model such that it could receive input in a way similar to how some of the Magenta models do.
 
-In order to further build upon the user experience of this project, a simple web app could be built to contribute to a larger population size for the [surveying method](#qualitativesurveryingmethod) described in the evaluation section. The web app would allow for a user to input a mood either by setting the Circumplex parameters manually or potentially tieing in the use of an uploaded image or even NLU to analyse the mood of a sentence and then feed this into the model to generate an appropriate piece. The hosting of a pre-trained model would be relatively simple to achieve and again was not deemed to be of sufficient value to justify the time and resource cost during this project as it was not key to the initially laid out requirements. Despite this, it could potentially gain traction online and provide a much larger sample size for automated collection of qualitative assessment data regarding the model.
+In order to further build upon the user experience of this project, a simple web app could be built to contribute to a larger population size for the [surveying method](#qualitativesurveryingmethod) described in the evaluation section. The web app would allow for a user to input a mood either by setting the Circumplex parameters manually or potentially tying in the use of an uploaded image or even NLU to analyse the mood of a sentence and then feed this into the model to generate an appropriate piece. The hosting of a pre-trained model would be relatively simple to achieve and again was not deemed to be of sufficient value to justify the time and resource cost during this project as it was not key to the initially laid out requirements. Despite this, it could potentially gain traction online and provide a much larger sample size for automated collection of qualitative assessment data regarding the model.
 
-### Synthesiser Parameters
+## Synthesiser Parameters
 
 Other researchers have successfully trained a model to change parameters of a synthesiser during live performance based on a musician's input and learned preferences [@sommer2014towards]. Moving forward this would be an excellent way to add another dimension to the project's outputted music; existing studies into the sentiments behind different timbres and urgency or latency introduced by manipulations of note attack-delay-sustain-release parameters could form a basis of some quantitative assessment of the results. The input could again influence the output through affecting the choice of parameter programming for the synthesiser used to play the compositions the system produces.
 
 One of the limitations in choosing to train a model on MIDI as mentioned earlier is that the output is also somewhat restricted to this format. At which point choices could be made in terms of how this MIDI is synthesised and played back to the user. This could range from something as simple as instrumental selection, to the tuning of parameters of a chosen synthesis engine as described here.
 
 
-## Author's Assessment of the Project
+# Author's Assessment of the Project
 
 <!-- As alluded to in the schedule, time has been scarce this term and some additional unforeseen issues have hindered objective completion. Despite this, the progress made has been significant in terms of gaining the appropriate knowledge through research and narrowing the scope of the project to a more linear series of steps. This allows for a more confident assurance of a good resolution to the project, especially in the areas of composition and encoding.
 

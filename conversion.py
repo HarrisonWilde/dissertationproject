@@ -128,7 +128,6 @@ def load_midi(filename):
         mid = mido.MidiFile(filename)
         track = mido.merge_tracks(mid.tracks)
         seq = midi_to_seq(mid, track)
-
         # Perform caching
         os.makedirs(os.path.dirname(cache_path), exist_ok=True)
         np.save(cache_path, seq)
