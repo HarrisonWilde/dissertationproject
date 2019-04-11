@@ -6,10 +6,11 @@
 \Huge{\textbf{Composing Dynamic Soundscapes Using Neural Networks and Sentimental Input}}\\
 \vspace*{2\baselineskip}
 \Large{\textbf{CS350 Dissertation Project Final Report}}\\
-University of Warwick, BSc Data Science\\
+University of Warwick\\
 \vspace*{2\baselineskip}
 \Large{\textbf{Author}}\\
 Harrison Wilde (u1600779)\\
+Third Year, BSc Data Science\\
 \vspace*{2\baselineskip}
 \Large{\textbf{Supervisor}}\\
 Professor Graham Cormode\\
@@ -53,6 +54,18 @@ Professor Graham Cormode\\
 % \vspace{\fill}
 % \newpage
 
+
+
+% - convey the essence of your project
+% - be self-contained
+% - state significant results/outcomes/achievements
+% 1. Purpose
+% 2. Methodology/Project Design
+% 3. Findings/Contribution
+% 4. Research Limitations/Future work
+% 5. Practical Implications/Conclusions
+
+
 \null\vspace{\fill}
 \renewcommand{\abstractname}{Abstract}
 \begin{abstract}
@@ -62,15 +75,11 @@ Professor Graham Cormode\\
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 \normalsize
 \noindent
-This dissertation focusses on the use of deep sequential learning techniques to imitate the very human artistic process of musical composition. Numerous techniques and approaches were applied mainly surrounding developments in Recurrent Neural Networks from the past two decades. The project highlights significant progress made by this research and similar papers as well as the work there is still to be done.
+This dissertation focusses on the application of deep sequential learning techniques to the very complex, human and artistic challenge of musical composition. Comparisons are drawn between numerous recurrent network variants that were trialled for their effectiveness alongside previous work. The project as a whole highlights significant progress made by this research and similar papers and provides commentary and potential avenues for the work there is still to be done.
 
-(Is talking about RNNs etc. in the abstract too technical, some of the writing sessions seem to think so but I would disagree given it is a key aspect of the project)
+The devised model is trained to learn not only temporal and harmonic structures in music, but also to generate music which is dynamic and conscious to some degree of a user-supplied mood or sentiment. To achieve this, the model is trained with a generalised representation of digital musical scores incorporating data on its analysed sentiment and the dynamics present in the piece.
 
-The devised model and architecture effectively captures musical structure and harmony in order to compose pieces which subscribe to the general style of the data used to train the model. Moreover, the chosen training data may have its sentiment analysed and attached as a feature during training to allow for retroactive tuning of the model through passing mood parameter values at the time of generation which then influence the mood of the outputs.
-
-The model is versatile and performant, to the point of it being potentially on par with the current cutting edge attempts at making progress in this field; it utilises recent developments to combat some of the issues in previous attempts whilst improving on the training time required to reach equivalent results.
-
-Testing indicates that the compositional engine can be trained with any genre of music and replicate it reasonably well. Future work would focus on improving the sentiment analysis part and improving integration with the model to perhaps focus on certain key defined features of the music.
+The model is versatile and performant, such that it competes with the current state-of-the-art in comparable environments as well as offering completely new functionality with respect to mood and versatility in its ability to understand the relativity of key in music as well as replicate different genres beyond just classical piano. It does all of this in training times which often undercut the other highly-performing models; through the application and unification of techniques to minimise model complexity whilst maximising effectiveness and applicability to composition. Future work would focus on improving the sentiment analysis part and improving integration with the model to perhaps focus on certain key defined features of the music.
 \end{abstract}
 \vspace{\fill}
 \newpage

@@ -23,6 +23,7 @@ from conversion import save_midi
 
 # output_graph = True
 
+# Equivalent to negative log-likelihood
 criterion = nn.CrossEntropyLoss()
 
 def plot_loss(training_loss, validation_loss, name):
@@ -165,6 +166,8 @@ def compute_loss(model, data, volatile=False):
         #     graph = hiddenlayer.build_graph(model, (inputs, moods))
         #     graph.save('./graph')
         output, _ = model(inputs, moods, None)
+        print(output.view(-1, config.FULL_RANGE).float()[0][targets.contiguous().view(-1)[0]])
+        print(targets.contiguous().view(-1))
         loss = criterion(output.view(-1, config.FULL_RANGE).float(), targets.contiguous().view(-1))
 
     return loss, loss.data.item()
