@@ -13,7 +13,7 @@ class WildeNet(nn.Module):
     """
     The WildeNet architecture.
     """
-    def __init__(self, num_units=2048, num_layers=4, mood_units=64):
+    def __init__(self, num_units=768, num_layers=4, mood_units=64):
         super().__init__()
         self.num_units = num_units
         self.num_layers = num_layers
@@ -21,15 +21,15 @@ class WildeNet(nn.Module):
 
         # RNN
         self.rnns = [
-            nn.GRU(config.FULL_RANGE + mood_units, int(self.num_units / 2), batch_first=True) if i == 0 else
-            DilatedRNN(nn.GRU(int(self.num_units / (2 ** i)), int(self.num_units / (2 ** (i + 1))), batch_first=True), 2 ** i)
+            nn.LSTM(config.FULL_RANGE + mood_units, self.num_units, batch_first=True) if i == 0 else
+            DilatedRNN(nn.LSTM(self.num_units, self.num_units, batch_first=True), 2 ** i)
             for i in range(self.num_layers)
         ]
 
-        self.output_linear = nn.Linear(int(self.num_units / (2 ** self.num_layers)), config.FULL_RANGE)
+        self.output_linear = nn.Linear(self.num_units, config.FULL_RANGE)
 
         for i, rnn in enumerate(self.rnns):
-            self.add_module('dgru' + str(i), rnn)
+            self.add_module('dlstm' + str(i), rnn)
 
         # Mood 192 output, 6 corresponds to the number of mood params
         self.mood_linear = nn.Linear(6, self.mood_units)
@@ -50,7 +50,11 @@ class WildeNet(nn.Module):
             states = [None for _ in range(self.num_layers)]
 
         for l, rnn in enumerate(self.rnns):
+            prev_x = x
             x, states[l] = rnn(x, states[l])
+
+            if l > 0:
+                x = prev_x + x
 
         x = self.output_linear(x)
         return x, states

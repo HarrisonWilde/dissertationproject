@@ -166,8 +166,8 @@ def compute_loss(model, data, volatile=False):
         #     graph = hiddenlayer.build_graph(model, (inputs, moods))
         #     graph.save('./graph')
         output, _ = model(inputs, moods, None)
-        print(output.view(-1, config.FULL_RANGE).float()[0][targets.contiguous().view(-1)[0]])
-        print(targets.contiguous().view(-1))
+        # print(output.view(-1, config.FULL_RANGE).float()[0][targets.contiguous().view(-1)[0]])
+        # print(targets.contiguous().view(-1))
         loss = criterion(output.view(-1, config.FULL_RANGE).float(), targets.contiguous().view(-1))
 
     return loss, loss.data.item()
