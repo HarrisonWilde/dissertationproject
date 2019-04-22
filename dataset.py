@@ -4,6 +4,7 @@ Preprocesses MIDI files
 import math, random, itertools, torch, os
 import numpy as np
 from tqdm import tqdm
+from datetime import datetime
 
 from conversion import load_midi
 from util import *
@@ -17,6 +18,7 @@ def load():
     moods = []
     seqs_sum = 0
     mood_stats = [0, 0, 0, 0, 0, 0]
+    note_counts = [0] * 128
 
     for filename in tqdm(os.listdir(config.MIDI_DIR)):
 
@@ -24,6 +26,12 @@ def load():
             try:
                 # Pad the sequence by an empty event
                 seq = load_midi(os.path.join(config.MIDI_DIR, filename))
+
+                for i in seq:
+                    try:
+                        note_counts[i] += 1
+                    except:
+                        pass
 
                 if len(seq) >= config.SEQ_LEN * 1.5:
                     seqs.append(torch.from_numpy(seq).long())
@@ -66,6 +74,9 @@ def load():
     print('Arousal Relaxing Ratio: ' + str(mood_stats[3] / len(seqs)))
     print('Arousal Mid Ratio: ' + str(mood_stats[4] / len(seqs)))
     print('Arousal Intense Ratio: ' + str(mood_stats[5] / len(seqs)))
+
+    print(note_counts)
+    np.save('note distribution ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '.npy', np.array(note_counts))
 
     return seqs, moods
 
@@ -129,39 +140,6 @@ def batcher(sampler, batch_size, seq_len=config.SEQ_LEN):
         return [torch.stack(x) for x in zip(*batch)]
     return batch 
 
-# def stretch_sequence(sequence, stretch_scale):
-#     """ Iterate through sequence and stretch each time shift event by a factor """
-#     # Accumulated time in seconds
-#     time_sum = 0
-#     seq_len = 0
-#     for i, evt in enumerate(sequence):
-#         if evt >= TIME_OFFSET and evt < VELOCITY_OFFSET:
-#             # This is a time shift event
-#             # Convert time event to number of seconds
-#             # Then, accumulate the time
-#             time_sum += convert_time_evt_to_sec(evt)
-#         else:
-#             if i > 0:
-#                 # Once there is a non time shift event, we take the
-#                 # buffered time and add it with time stretch applied.
-#                 for x in seconds_to_events(time_sum * stretch_scale):
-#                     yield x
-#                 # Reset tracking variables
-#                 time_sum = 0
-#             seq_len += 1
-#             yield evt
-
-#     # Edge case where last events are time shift events
-#     if time_sum > 0:
-#         for x in seconds_to_events(time_sum * stretch_scale):
-#             seq_len += 1
-#             yield x
-
-#     # Pad sequence with empty events if seq len not enough
-#     if seq_len < config.SEQ_LEN:
-#         for x in range(SEQ_LEN - seq_len):
-#             yield config.TIME_OFFSET
-            
 def transpose(sequence):
     """ A generator that represents the sequence. """
     # Transpose by 4 semitones at most

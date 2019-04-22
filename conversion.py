@@ -30,8 +30,8 @@ class TrackBuilder():
             self.last_velocity = (evt - config.VELOCITY_OFFSET) * (config.MIDI_VELOCITY // config.VELOCITY_BINS)
         elif evt >= config.TIME_OFFSET:
             # Shifting forward in time
-            tick_bin = evt - TIME_OFFSET
-            assert tick_bin >= 0 and tick_bin < TIME_BINS
+            tick_bin = evt - config.TIME_OFFSET
+            assert tick_bin >= 0 and tick_bin < config.TIME_BINS
             seconds = config.TICK_BINS[tick_bin] / config.TICKS_PER_SEC
             self.delta_time += int(mido.second2tick(seconds, self.midi_file.ticks_per_beat, self.tempo))
         elif evt >= 0:
@@ -83,7 +83,7 @@ def midi_to_seq(midi_file, track):
     Converts a MIDO track object into an event sequence
     """
     events = []
-    tempo = None
+    tempo = 120
     last_velocity = None
     
     for msg in track:
