@@ -146,14 +146,16 @@ Sequence Generation, Sentiment Analysis},
 \null\vspace{\fill}
 \begin{center}
 \Huge{\textbf{Composing Dynamic Soundscapes Using Neural Networks and Sentimental Input}}\\
-\vspace*{2\baselineskip}
+\vspace*{\baselineskip}
+\includegraphics[width=150px]{Images/untitled.png}\\
+\vspace*{\baselineskip}
 \Large{\textbf{CS350 Dissertation Project Final Report}}\\
-University of Warwick - 2019\\
-\vspace*{2\baselineskip}
+University of Warwick, 2019\\
+\vspace*{\baselineskip}
 \Large{\textbf{Author}}\\
 Harrison Wilde (u1600779)\\
 Third Year, BSc Data Science\\
-\vspace*{2\baselineskip}
+\vspace*{\baselineskip}
 \Large{\textbf{Supervisor}}\\
 Professor Graham Cormode\\
 \vspace*{3\baselineskip}
@@ -172,28 +174,31 @@ Professor Graham Cormode\\
 % list of figures have to be added manually to table of contents
 \listoffigures 
 \newpage
+\setcounter{page}{5}
 
 \listoftables
 \newpage
 \hypersetup{linkcolor = red}
 
-% \null\vspace{\fill}
-% \renewcommand{\abstractname}{Acknowledgements}
-% \begin{abstract}
-% \phantomsection  % required if using hyperref
-% \addcontentsline{toc}{section}{\abstractname}
-% \setlength\parindent{0pt}
-% \setlength{\parskip}{6pt plus 2pt minus 1pt}
-% \normalsize
-% \noindent
-% My personal tutor Professor Bärbel Finkenstädt and trusted advisor and friend Dr Matthew Leeke alongside my supervisor Professor Graham Cormode have shown consistent support on a personal, professional and academic level throughout my time at the University; for this I owe them great thanks.
+\null\vspace{\fill}
+\renewcommand{\abstractname}{Acknowledgements}
+\begin{abstract}
+\phantomsection  % required if using hyperref
+\addcontentsline{toc}{section}{\abstractname}
+\setlength\parindent{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\normalsize
+\noindent
+I owe great thanks to my personal tutor Professor Bärbel Finkenstädt, my trusted advisor Dr Matthew Leeke and my supervisor Professor Graham Cormode who have each shown consistent support on a personal, professional and academic level throughout my time at the University.
 
-% The support of my family and friends has been invaluable throughout this process; especially my mother Katie who has always been unwavering in her support of me in the pursuit of my aspirations.
+The support of my family and friends has been invaluable during this process; especially my mother Katie who has always been unwavering in her support of me in the pursuit of my aspirations.
 
-% I would also like to thank all of the artists and musicians who gave feedback on my work or were featured in the training corpus; without their tireless work the world would be severely lacking in value and beauty. Most notably, the works of \href{https://www.youtube.com/watch?v=JKsVsEXZXe8}{Ryuichi Sakamoto}, \href{https://music-from-memory.bandcamp.com/track/call-me-2}{Gigi Masin}, \href{https://youtu.be/vveVs8axQRc}{Jónsi and Alex Somers}, \href{https://helloflora.bandcamp.com/track/cecilia-lake}{Jamison Isaak} and \href{https://bvdub.bandcamp.com/track/ember-1}{Brock Van Wey} have shaped my years as an undergraduate and offered a great deal of creative and intellectual stimulation as well as instilling a great appreciation for the world and its inhabitants.
-% \end{abstract}
-% \vspace{\fill}
-% \newpage
+I acknowledge and am grateful for the work of Mu Chen on his DeepSent project which forms the basis for some of the sentiment analysis carried out during this project, as well as for the correspondence I had with Nicolas Boulanger-Lewandowski and Daniel Johnson regarding the evaluation procedures they used in their own work so that I might compare the results of this project with their research (these researchers are all cited in the main body of the report).
+
+Finally, I would like to thank all of the artists and musicians who gave feedback on my work or were featured in the training corpus; without their tireless work the world would be severely lacking in value and beauty. Most notably, the works of \href{https://www.youtube.com/watch?v=JKsVsEXZXe8}{Ryuichi Sakamoto}, \href{https://music-from-memory.bandcamp.com/track/call-me-2}{Gigi Masin}, \href{https://youtu.be/vveVs8axQRc}{Jónsi and Alex Somers}, \href{https://helloflora.bandcamp.com/track/cecilia-lake}{Jamison Isaak} and \href{https://bvdub.bandcamp.com/track/ember-1}{Brock Van Wey} have shaped my years as an undergraduate and offered a great deal of creative and intellectual stimulation as well as instilling a great appreciation for the world and its people.
+\end{abstract}
+\vspace{\fill}
+\newpage
 
 
 
@@ -605,9 +610,11 @@ model for MIDI transcription
 pre-trained on classical piano music and has performance beyond all
 other options in terms of the calculated F1-score and accuracy when
 comparing the differences between the model's generated transcriptions
-and their ground truths. The data for these comparisons is present in
-the paper as an ablation study carried out to justify the innovations
-applied in the architecture it discusses.
+and their ground truths (i.e.~considering true / false positive /
+negative notes transcribed by the systems). The data for these
+comparisons is present in the paper as an ablation study carried out to
+justify the innovative features incorporated into the architecture it
+presents.
 
 The architecture mainly relies on convolutional kernels to capture
 features in the raw audio and map them to MIDI notes. Due to this, it
@@ -770,7 +777,7 @@ models often involved a note prediction task where datasets were
 supplied as training data and the model's loss minimised in attempting
 to predict future played notes based on prior ones. Many of the
 referenced attempts utilise this method of assessment and even go so far
-as to use the same datasets meaning a similar test:train:validation
+as to use the same datasets, meaning a similar test:train:validation
 split and prediction assessment could be carried out as part of the
 evaluation of this project. Data could be gathered and compiled from
 previous papers to observe a steady increase in effectiveness as various
@@ -806,7 +813,7 @@ surpassing previous work through these cutting-edge developments.
 \hypertarget{other-approaches}{%
 \subsubsection{Other Approaches}\label{other-approaches}}
 
-Many early systems for automatic composition were required the manual
+Many early systems for automatic composition required the manual
 specification of rules
 {[}\protect\hyperlink{ref-ebciouglu1988expert}{37}{]},
 {[}\protect\hyperlink{ref-cruz1998learning}{38}{]} or derived their own
@@ -898,8 +905,8 @@ up along the way.
 The first stages of this project in particular had stringent research
 requirements in order to formulate an effective overall approach. There
 was a large body of work to investigate, much of which consisted of
-research from the past couple of years meaning a lot was still based
-mainly in theory and lacked pre-existing implementation options. This
+research from the past couple of years meaning a lot was still largely
+based in theory and lacked pre-existing implementation options. This
 imposed a requirement for careful thought in terms of which avenues
 might be worth exploring and which were feasible with the given
 resources and time-frame. This research was well-documented in the
@@ -1019,8 +1026,8 @@ in the evaluation section.
 
 This survey was discussed with the project's supervisor but was deemed
 to be satisfactory in terms of any ethical considerations; no further
-justification or recourse was necessary to ensure the ethicacy of it as
-a means of evaluation.
+justification or recourse was necessary to ensure the ethicality of it
+as a means of evaluation.
 
 \hypertarget{midi-transcription}{%
 \section{MIDI Transcription}\label{midi-transcription}}
@@ -1106,7 +1113,8 @@ onset. The second image shows the predictions after removing notes that
 did not have a detected onset. Yellow indicates frame prediction and
 ground truth overlap, green indicates an erroneous frame prediction, and
 red indicates ground truth without a frame prediction
-(\textit{image description also sourced from Magenta's Blog}).
+(\textit{image description also sourced from Magenta's Blog}
+{[}\protect\hyperlink{ref-onsetsblog}{48}{]}).
 
 Based on the transcriptions both create it is possible to compare them
 qualitatively. Magenta's approach appears more committed in its choice
@@ -1195,7 +1203,7 @@ After deciding on the raw training data to use, a schema was required to
 represent the selected MIDI files in a tensor format so that they could
 be used to train the model. MIDI was converted to tensors by iterating
 through their files using the python package \texttt{mido}
-{[}\protect\hyperlink{ref-mido}{48}{]}. In order to understand this
+{[}\protect\hyperlink{ref-mido}{49}{]}. In order to understand this
 process, it is useful to consider the format of a MIDI file in that they
 are a stream of messages containing:
 
@@ -1220,10 +1228,10 @@ are a stream of messages containing:
 Most existing solutions do \emph{not} have an effective means of
 representing velocity in their training data. This was considered to be
 an important factor when designing a representation, as much of what
-makes music sound human comes from the dynamics velocity can contribute
-to a piece. Recent work by the Magenta team proposes one method of
-incorporating velocity
-{[}\protect\hyperlink{ref-performance-rnn-2017}{49}{]}, but their
+makes music sound human comes from the dynamics that velocity can
+contribute to a piece. Recent work by the Magenta team proposes one
+method of incorporating velocity
+{[}\protect\hyperlink{ref-performance-rnn-2017}{50}{]}, but their
 research paper is still forthcoming, leading to the formulation of the
 different method described below.
 
@@ -1300,7 +1308,7 @@ automatically for each element of the chosen datasets and then
 associated with the MIDI files to be used in training. Sentiment is
 measured with respect to an arousal-valence emotional model known as the
 Circumplex model
-{[}\protect\hyperlink{ref-russell1980circumplex}{50}{]}, with values
+{[}\protect\hyperlink{ref-russell1980circumplex}{51}{]}, with values
 being determined for both axes of arousal and valence.
 
 \begin{figure}
@@ -1358,7 +1366,7 @@ into 5-second long frames of samples, with a step of 0.5 seconds between
 the starting points of each (such that there is overlap between frames).
 Within each of these there is then a further decomposition into 25ms
 sub-frames that are transformed into an array of Mel-frequency cepstral
-coefficients (MFCCs) {[}\protect\hyperlink{ref-logan2000mel}{51}{]}.
+coefficients (MFCCs) {[}\protect\hyperlink{ref-logan2000mel}{52}{]}.
 
 The matrices representing the MFCCs for each sub-frame are then
 flattened and fed into a 3-layer neural network regressor. The neural
@@ -1420,7 +1428,7 @@ over a temporal dimension allowing the network to exhibit dynamic
 behaviour over time. Their evolution over time depends on the inputs as
 well as its previous / current state. They could be considered to be an
 evolution of hidden Markov models
-{[}\protect\hyperlink{ref-baum1966}{52}{]} but with the addition of a
+{[}\protect\hyperlink{ref-baum1966}{53}{]} but with the addition of a
 distributed state allowing for more complex and dynamic behaviours to be
 captured in a computationally effective manner.
 
@@ -1451,7 +1459,7 @@ Where:
   \(W_{xy}\) represents the weight parameters between layers \(x\) and
   \(y\), these weight parameters are learned using backpropagation
   through time (BPTT)
-  {[}\protect\hyperlink{ref-werbos1990backpropagation}{53}{]}.
+  {[}\protect\hyperlink{ref-werbos1990backpropagation}{54}{]}.
 \item
   \(b_{xy}\) is the bias parameter between layers \(x\) and \(y\) also
   adjusted during training via BPTT or a similar algorithm.
@@ -1496,7 +1504,7 @@ over traditional feedforward networks.
 
 Recurrent neural networks such as these often learn through the Back
 Propagation Through Time algorithm
-{[}\protect\hyperlink{ref-werbos1990backpropagation}{53}{]}, this is an
+{[}\protect\hyperlink{ref-werbos1990backpropagation}{54}{]}, this is an
 algorithm which roughly can be described as propagating error back
 through a network's graph by traversing the connections made across time
 steps in reverse order and updating the parameters in order to improve a
@@ -1510,7 +1518,7 @@ architectures to be made almost entirely of differentiable components in
 order for backpropagation optimisation to be applied. The main issues
 encountered for recurrent neural networks are with respect to the
 calculation of vanishing and exploding gradients
-{[}\protect\hyperlink{ref-pascanu2012understanding}{54}{]} during this
+{[}\protect\hyperlink{ref-pascanu2012understanding}{55}{]} during this
 optimisation which occurs when small or large values are propagated back
 in a graph with a huge number of connections and parameters (as
 recurrent networks in this problem space often do).
@@ -1529,15 +1537,17 @@ backpropagation; tiny or large values will often compound and be
 multiplied together leading to the network getting stuck or
 significantly slowing its learning.
 
-These issues have inspired a number of variants aiming to mitigate these
-problems and form the basis of most current approaches to musical
-composition. Through considerable research, it was decided that LSTMs
-and GRUs should be trialled against each other as part of this project's
-model architecture due to their pre-eminent position in this area as
-promising solutions to the issues outlined here. As well as aiming to
-mitigate these issues, they aim to capture long-term dependencies
-through the careful control of data flowing through a network of these
-units over time.
+These issues have inspired a number of variant units replacing the
+traditional RNN node which aim to mitigate these problems and thus form
+the basis of most current approaches to musical composition. Through
+considerable research
+{[}\protect\hyperlink{ref-lipton2015critical}{56}{]}--{[}\protect\hyperlink{ref-dey2017gate}{59}{]},
+it was decided that LSTMs and GRUs should be trialled against each other
+as part of this project's model architecture due to their pre-eminent
+position in this area as promising solutions to the issues outlined
+here. As well as aiming to mitigate these issues, they aim to capture
+long-term dependencies through the careful control of data flowing
+through a network of these units over time.
 
 \hypertarget{long-short-term-memory-recurrent-units}{%
 \subsubsection{Long Short-Term Memory Recurrent
@@ -1546,11 +1556,13 @@ Units}\label{long-short-term-memory-recurrent-units}}
 The LSTM unit was first proposed in 1999
 {[}\protect\hyperlink{ref-gers1999learning}{7}{]}, though the version
 formulated here includes some improvements based on more recent research
-{[}\protect\hyperlink{ref-sak2014long}{55}{]}--{[}\protect\hyperlink{ref-zebin2018human}{57}{]},
-the most notable addition is that of the \emph{forget gate}. LSTMs
-introduce a means of allowing long-term dependencies to be captured by
-RNNs through introducing three `gates' which each interact with a cell
-memory state and previous hidden activations passed through time:
+{[}\protect\hyperlink{ref-greff2017lstm}{57}{]},
+{[}\protect\hyperlink{ref-sak2014long}{60}{]},
+{[}\protect\hyperlink{ref-zebin2018human}{61}{]}, the most notable
+addition is that of the \emph{forget gate}. LSTMs introduce a means of
+allowing long-term dependencies to be captured by RNNs through
+introducing three `gates' which each interact with a cell memory state
+\(c_t\) and previous hidden activations passed through time:
 
 \begin{itemize}
 \tightlist
@@ -1602,7 +1614,7 @@ through the unit.}
 
 Note that there are many small variations on the LSTM concept; the
 mathematical formulation was written here in context of PyTorch's
-implementation {[}\protect\hyperlink{ref-pytorchlstm}{58}{]} and the
+implementation {[}\protect\hyperlink{ref-pytorchlstm}{62}{]} and the
 figure reflects this.
 
 \hypertarget{gated-recurrent-units}{%
@@ -1648,7 +1660,7 @@ unit.}
 
 Note that there are many small variations on the GRU concept; the
 mathematical formulation was written here in context of PyTorch's
-implementation {[}\protect\hyperlink{ref-pytorchgru}{59}{]} and the
+implementation {[}\protect\hyperlink{ref-pytorchgru}{63}{]} and the
 figure reflects this.
 
 Both of these units' gates offer improvements over their ``vanilla'' RNN
@@ -1666,7 +1678,7 @@ in musical composition.
 
 The concept of dilation was first proposed in the context of
 convolutional neural networks
-{[}\protect\hyperlink{ref-yu2015multi}{60}{]} for image analysis and
+{[}\protect\hyperlink{ref-yu2015multi}{64}{]} for image analysis and
 semantic segmentation; this work was discovered during research for a
 \protect\hyperlink{sentimentalinputfromimages}{potential extension} of
 this project. The main concept is to aggregate information at different
@@ -1701,7 +1713,7 @@ input.}
 \end{figure}
 
 A paper was published linking this concept with recurrent neural
-networks in 2017 {[}\protect\hyperlink{ref-chang2017dilated}{61}{]}.
+networks in 2017 {[}\protect\hyperlink{ref-chang2017dilated}{65}{]}.
 This paper forms the basis for the justification of using dilation in
 the model present in this project; this project's compositional model is
 potentially the first use of dilated recurrent neural networks in the
@@ -1793,9 +1805,9 @@ and D major.}
 This highlights a potential issue with many pre-existing attempts at
 composition using neural networks and the limitations of some
 distribution estimators such as Restricted Boltzmann Machines
-{[}\protect\hyperlink{ref-sutskever2009recurrent}{62}{]} and Neural
+{[}\protect\hyperlink{ref-sutskever2009recurrent}{66}{]} and Neural
 Autoregressive Distribution Estimators
-{[}\protect\hyperlink{ref-uria2016neural}{63}{]}. Many modern approaches
+{[}\protect\hyperlink{ref-uria2016neural}{67}{]}. Many modern approaches
 utilise these units in their models, which involve a fixed distribution
 generating probabilities for each note deterministically, i.e.~one
 probability for each possible note. Whilst this may seem initially ideal
@@ -1837,8 +1849,9 @@ The idea is to apply this concept to the model's architecture such that
 all inputs of the same offset are treated equally to each other, by
 considering their positions relatively rather than absolutely.
 
-\hypertarget{the-model-itself}{%
-\subsection{The Model Itself}\label{the-model-itself}}
+\hypertarget{the-finalised-model-architecture}{%
+\subsection{The Finalised Model
+Architecture}\label{the-finalised-model-architecture}}
 
 The culmination of the above sections results in a network consisting of
 dilated GRU or LSTM units, tied such that they are invariant temporally
@@ -1858,7 +1871,7 @@ advantage of appearing intuitive in the domain of musical composition.
 Four hidden layers were used with exponentially increasing dilation
 factors ranging from 1 to 8 as has been proved to be the most effective
 arrangement computationally
-{[}\protect\hyperlink{ref-chang2017dilated}{61}{]} and is also the most
+{[}\protect\hyperlink{ref-chang2017dilated}{65}{]} and is also the most
 logical arrangement for capturing the different temporal resolutions in
 music. Two configurations for the hidden layer sizes were attempted:
 
@@ -1878,7 +1891,7 @@ There is no agreed upon rule or practice for hidden layer configuration,
 but common approaches are to attempt layer sizes in an inverted
 pyramidal configuration like that described in (1.) or for all layers to
 have a similar number of units as in (2.)
-{[}\protect\hyperlink{ref-doi10108001431160802549278}{64}{]}. Most
+{[}\protect\hyperlink{ref-doi10108001431160802549278}{68}{]}. Most
 existing solutions maintain a consistent number of units in each layer.
 In order to arrive at these numbers some preliminary testing was carried
 out to compliment the knowledge and intuition already gained from
@@ -1910,7 +1923,7 @@ choices.
 
 In order to train the models, it was necessary to utilise
 backpropagation through time
-{[}\protect\hyperlink{ref-werbos1990backpropagation}{53}{]}; it is
+{[}\protect\hyperlink{ref-werbos1990backpropagation}{54}{]}; it is
 during this process that dilation becomes invaluable through minimising
 the total number of connections in paths between nodes at different
 times which has a positive computational impact for the execution of the
@@ -2389,7 +2402,12 @@ long-term structure effectively for extended periods. The outputs are
 polyphonic and harmonically complex and the temporal structure in terms
 of gaps between notes is usually regular and consistent leading again to
 the conclusion that the model is successfully emulating how a human
-might compose a piece.
+might compose a piece. Longer samples do tend to slowly diverge from
+initial motifs and can begin to stutter; often gaps in playing occur at
+unexpected intervals as the model seems to drift between ideas. This is
+an issue reminiscent of other solutions and occurs less than in most
+other work but relates to the inherent issues of these probabilistic
+generative processes.
 
 As mentioned in the \protect\hyperlink{introduction}{introduction}, one
 stretch goal included the creation of a website hosting a pre-trained
@@ -2514,10 +2532,18 @@ developed and tested iteratively but all of them faced similar
 limitations due to a lack of data. The model itself proved to be close
 to state-of-the-art through its training performance and quantitative
 evaluation. However, many of the pieces still seemed to leave something
-to be desired; especially when the created ambient corpus was used
+to be desired; especially when the created ambient corpus was used.
+These models actually tend to struggle more with larger datasets if they
+also introduce a large amount of variance; the eventual aim is to build
+models capable of dealing with and effectively interpreting this
+variance as creative opportunity, but currently leads to the requirement
+of long training times and complex models in general. This is why there
+is emphasis on not only the size of training data but also the quality
+and coherence as a corpus. It is also why most other work focusses on
+relatively homogenous datasets such as Bach chorales and so on.
 
 OpenAI recently published a break-through paper surrounding their GPT-2
-model {[}\protect\hyperlink{ref-radford2018language}{65}{]} which has
+model {[}\protect\hyperlink{ref-radford2018language}{69}{]} which has
 reached new heights in language modelling and generation. The team cites
 much of the improvement as being a result of the scale and quality of
 their training data as well as their available resources and
@@ -2576,7 +2602,7 @@ sense that with some further development they could compete with or even
 surpass all current models.
 
 Statistical Recurrent Units
-{[}\protect\hyperlink{ref-oliva2017statistical}{66}{]} substitute the
+{[}\protect\hyperlink{ref-oliva2017statistical}{70}{]} substitute the
 gates of GRUs and LSTMs with moving averages of a selection of recurrent
 statistics. They have already achieved promising results in the task of
 musical composition but were not found to be significantly better than
@@ -2587,14 +2613,14 @@ exploding gradients and could potentially achieve similar results to
 other units with significantly simpler parameter sets.
 
 Variational Auto-Encoders
-{[}\protect\hyperlink{ref-roberts2017hierarchical}{67}{]} and Neural
-Turing Machines {[}\protect\hyperlink{ref-graves2014neural}{68}{]} again
+{[}\protect\hyperlink{ref-roberts2017hierarchical}{71}{]} and Neural
+Turing Machines {[}\protect\hyperlink{ref-graves2014neural}{72}{]} again
 build on the issues of RNNs and have features which would make them
 worth applying to musical composition. Google's Magenta team published a
 paper during the course of this project that pursued similar goals to
 those laid out here: they utilised VAEs to combat long-term coherence
 issues and had success in doing so
-{[}\protect\hyperlink{ref-roberts2018hierarchical}{69}{]}. It would be
+{[}\protect\hyperlink{ref-roberts2018hierarchical}{73}{]}. It would be
 interesting to look at applying concepts used in these recent
 publications and the aforementioned state-of-the-art DBN-LSTM to the
 ground breached here in terms of harmonic invariance and dilation. Both
@@ -2662,7 +2688,7 @@ around 1980) with the required interfacing as well as all digitally
 synthesised and sampled instruments. Other researchers have successfully
 trained a model to change parameters of a synthesiser during live
 performance based on a musician's input and learned preferences
-{[}\protect\hyperlink{ref-sommer2014towards}{70}{]}.
+{[}\protect\hyperlink{ref-sommer2014towards}{74}{]}.
 
 Moving forward this would be an excellent way to add another dimension
 to the project's generated compositions; existing studies into the
@@ -2960,114 +2986,134 @@ today,'' \emph{Journal of New Music Research}, vol. 33, no. 3, pp.
 History and current techniques}. Department of Computer Science,
 University of Regina Regina, Canada, 2003.
 
+\leavevmode\hypertarget{ref-onsetsblog}{}%
+{[}48{]} C. Hawthorne and E. Elsen, ``Onsets and frames: Dual-objective
+piano transcription,'' \emph{Magenta Blog}.
+\url{https://magenta.tensorflow.org/onsets-frames}, 2018.
+
 \leavevmode\hypertarget{ref-mido}{}%
-{[}48{]} O. M. Bjørndalen and R. Binkys, ``Mido python package.'' \\
+{[}49{]} O. M. Bjørndalen and R. Binkys, ``Mido python package.'' \\
 \url{https://mido.readthedocs.io/en/latest/index.html}.
 
 \leavevmode\hypertarget{ref-performance-rnn-2017}{}%
-{[}49{]} I. Simon and S. Oore, ``Performance rnn: Generating music with
+{[}50{]} I. Simon and S. Oore, ``Performance rnn: Generating music with
 expressive timing and dynamics,'' \emph{Magenta Blog}.
 \url{https://magenta.tensorflow.org/performance-rnn}, 2017.
 
 \leavevmode\hypertarget{ref-russell1980circumplex}{}%
-{[}50{]} J. A. Russell, ``A circumplex model of affect.'' \emph{Journal
+{[}51{]} J. A. Russell, ``A circumplex model of affect.'' \emph{Journal
 of personality and social psychology}, vol. 39, no. 6, p. 1161, 1980.
 
 \leavevmode\hypertarget{ref-logan2000mel}{}%
-{[}51{]} B. Logan and others, ``Mel frequency cepstral coefficients for
+{[}52{]} B. Logan and others, ``Mel frequency cepstral coefficients for
 music modeling.'' in \emph{ISMIR}, 2000, vol. 270, pp. 1--11.
 
 \leavevmode\hypertarget{ref-baum1966}{}%
-{[}52{]} L. E. Baum and T. Petrie, ``Statistical inference for
+{[}53{]} L. E. Baum and T. Petrie, ``Statistical inference for
 probabilistic functions of finite state markov chains,'' \emph{Ann.
 Math. Statist.}, vol. 37, no. 6, pp. 1554--1563, Dec. 1966 {[}Online{]}.
 Available: \url{https://doi.org/10.1214/aoms/1177699147}
 
 \leavevmode\hypertarget{ref-werbos1990backpropagation}{}%
-{[}53{]} P. J. Werbos and others, ``Backpropagation through time: What
+{[}54{]} P. J. Werbos and others, ``Backpropagation through time: What
 it does and how to do it,'' \emph{Proceedings of the IEEE}, vol. 78, no.
 10, pp. 1550--1560, 1990.
 
 \leavevmode\hypertarget{ref-pascanu2012understanding}{}%
-{[}54{]} R. Pascanu, T. Mikolov, and Y. Bengio, ``Understanding the
+{[}55{]} R. Pascanu, T. Mikolov, and Y. Bengio, ``Understanding the
 exploding gradient problem,'' \emph{CoRR, abs/1211.5063}, vol. 2, 2012.
 
-\leavevmode\hypertarget{ref-sak2014long}{}%
-{[}55{]} H. Sak, A. Senior, and F. Beaufays, ``Long short-term memory
-recurrent neural network architectures for large scale acoustic
-modeling,'' in \emph{Fifteenth annual conference of the international
-speech communication association}, 2014.
+\leavevmode\hypertarget{ref-lipton2015critical}{}%
+{[}56{]} Z. C. Lipton, J. Berkowitz, and C. Elkan, ``A critical review
+of recurrent neural networks for sequence learning,'' \emph{arXiv
+preprint arXiv:1506.00019}, 2015.
 
 \leavevmode\hypertarget{ref-greff2017lstm}{}%
-{[}56{]} K. Greff, R. K. Srivastava, J. Koutník, B. R. Steunebrink, and
+{[}57{]} K. Greff, R. K. Srivastava, J. Koutník, B. R. Steunebrink, and
 J. Schmidhuber, ``LSTM: A search space odyssey,'' \emph{IEEE
 transactions on neural networks and learning systems}, vol. 28, no. 10,
 pp. 2222--2232, 2017.
 
+\leavevmode\hypertarget{ref-yao2015depth}{}%
+{[}58{]} K. Yao, T. Cohn, K. Vylomova, K. Duh, and C. Dyer,
+``Depth-gated lstm,'' \emph{arXiv preprint arXiv:1508.03790}, 2015.
+
+\leavevmode\hypertarget{ref-dey2017gate}{}%
+{[}59{]} R. Dey and F. M. Salemt, ``Gate-variants of gated recurrent
+unit (gru) neural networks,'' in \emph{2017 ieee 60th international
+midwest symposium on circuits and systems (mwscas)}, 2017, pp.
+1597--1600.
+
+\leavevmode\hypertarget{ref-sak2014long}{}%
+{[}60{]} H. Sak, A. Senior, and F. Beaufays, ``Long short-term memory
+recurrent neural network architectures for large scale acoustic
+modeling,'' in \emph{Fifteenth annual conference of the international
+speech communication association}, 2014.
+
 \leavevmode\hypertarget{ref-zebin2018human}{}%
-{[}57{]} T. Zebin, M. Sperrin, N. Peek, and A. J. Casson, ``Human
+{[}61{]} T. Zebin, M. Sperrin, N. Peek, and A. J. Casson, ``Human
 activity recognition from inertial sensor time-series using batch
 normalized deep lstm recurrent networks,'' in \emph{2018 40th annual
 international conference of the ieee engineering in medicine and biology
 society (embc)}, 2018, pp. 1--4.
 
 \leavevmode\hypertarget{ref-pytorchlstm}{}%
-{[}58{]} \relax PyTorch, ``PyTorch Implementation of an LSTM.'' \\
+{[}62{]} \relax PyTorch, ``PyTorch Implementation of an LSTM.'' \\
 \url{https://pytorch.org/docs/stable/nn.html\#lstm}.
 
 \leavevmode\hypertarget{ref-pytorchgru}{}%
-{[}59{]} \relax PyTorch, ``PyTorch Implementation of a GRU.'' \\
+{[}63{]} \relax PyTorch, ``PyTorch Implementation of a GRU.'' \\
 \url{https://pytorch.org/docs/stable/nn.html\#gru}.
 
 \leavevmode\hypertarget{ref-yu2015multi}{}%
-{[}60{]} F. Yu and V. Koltun, ``Multi-scale context aggregation by
+{[}64{]} F. Yu and V. Koltun, ``Multi-scale context aggregation by
 dilated convolutions,'' \emph{arXiv preprint arXiv:1511.07122}, 2015.
 
 \leavevmode\hypertarget{ref-chang2017dilated}{}%
-{[}61{]} S. Chang \emph{et al.}, ``Dilated recurrent neural networks,''
+{[}65{]} S. Chang \emph{et al.}, ``Dilated recurrent neural networks,''
 \emph{arXiv preprint arXiv:1710.02224}, 2017.
 
 \leavevmode\hypertarget{ref-sutskever2009recurrent}{}%
-{[}62{]} I. Sutskever, G. E. Hinton, and G. W. Taylor, ``The recurrent
+{[}66{]} I. Sutskever, G. E. Hinton, and G. W. Taylor, ``The recurrent
 temporal restricted boltzmann machine,'' in \emph{Advances in neural
 information processing systems}, 2009, pp. 1601--1608.
 
 \leavevmode\hypertarget{ref-uria2016neural}{}%
-{[}63{]} B. Uria, M.-A. Côté, K. Gregor, I. Murray, and H. Larochelle,
+{[}67{]} B. Uria, M.-A. Côté, K. Gregor, I. Murray, and H. Larochelle,
 ``Neural autoregressive distribution estimation,'' \emph{The Journal of
 Machine Learning Research}, vol. 17, no. 1, pp. 7184--7220, 2016.
 
 \leavevmode\hypertarget{ref-doi10108001431160802549278}{}%
-{[}64{]} D. Stathakis, ``How many hidden layers and nodes?''
+{[}68{]} D. Stathakis, ``How many hidden layers and nodes?''
 \emph{International Journal of Remote Sensing}, vol. 30, no. 8, pp.
 2133--2147, 2009 {[}Online{]}. Available:
 \url{https://doi.org/10.1080/01431160802549278}
 
 \leavevmode\hypertarget{ref-radford2018language}{}%
-{[}65{]} A. Radford, J. Wu, R. Child, D. Luan, D. Amodei, and I.
+{[}69{]} A. Radford, J. Wu, R. Child, D. Luan, D. Amodei, and I.
 Sutskever, ``Language models are unsupervised multitask learners.''
 
 \leavevmode\hypertarget{ref-oliva2017statistical}{}%
-{[}66{]} J. B. Oliva, B. Póczos, and J. Schneider, ``The statistical
+{[}70{]} J. B. Oliva, B. Póczos, and J. Schneider, ``The statistical
 recurrent unit,'' in \emph{Proceedings of the 34th international
 conference on machine learning-volume 70}, 2017, pp. 2671--2680.
 
 \leavevmode\hypertarget{ref-roberts2017hierarchical}{}%
-{[}67{]} A. Roberts, J. Engel, and D. Eck, ``Hierarchical variational
+{[}71{]} A. Roberts, J. Engel, and D. Eck, ``Hierarchical variational
 autoencoders for music,'' in \emph{NIPS workshop on machine learning for
 creativity and design}, 2017.
 
 \leavevmode\hypertarget{ref-graves2014neural}{}%
-{[}68{]} A. Graves, G. Wayne, and I. Danihelka, ``Neural turing
+{[}72{]} A. Graves, G. Wayne, and I. Danihelka, ``Neural turing
 machines,'' \emph{arXiv preprint arXiv:1410.5401}, 2014.
 
 \leavevmode\hypertarget{ref-roberts2018hierarchical}{}%
-{[}69{]} A. Roberts, J. Engel, C. Raffel, C. Hawthorne, and D. Eck, ``A
+{[}73{]} A. Roberts, J. Engel, C. Raffel, C. Hawthorne, and D. Eck, ``A
 hierarchical latent vector model for learning long-term structure in
 music,'' \emph{arXiv preprint arXiv:1803.05428}, 2018.
 
 \leavevmode\hypertarget{ref-sommer2014towards}{}%
-{[}70{]} N. Sommer and A. Ralescu, ``Towards a machine learning based
+{[}74{]} N. Sommer and A. Ralescu, ``Towards a machine learning based
 control of musical synthesizers in real-time live performance,'' in
 \emph{Proc. Of the 25th modern artificial intelligence and cognitive
 science conf., spokane, washington, usa}, 2014, pp. 61--67.
