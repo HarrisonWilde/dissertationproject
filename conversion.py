@@ -1,17 +1,19 @@
-"""
-Handles MIDI file loading
-"""
-import math, os, mido
+import math
+import mido
+import os
 import numpy as np
 
 import config
-from util import *
 
+
+"""
+Builds a track from an iterator of passed events
+"""
 class TrackBuilder():
     def __init__(self, event_seq, tempo=mido.bpm2tempo(120)):
         self.event_seq = event_seq
         
-        self.last_velocity = 0
+        self.prev_velocity = 0
         self.delta_time = 0
         self.tempo = mido.bpm2tempo(120)
         self.track_tempo = tempo
@@ -27,18 +29,18 @@ class TrackBuilder():
         # Interpret event data
         if evt >= config.VELOCITY_OFFSET:
             # A velocity change
-            self.last_velocity = (evt - config.VELOCITY_OFFSET) * (config.MIDI_VELOCITY // config.VELOCITY_BINS)
+            self.prev_velocity = (evt - config.VELOCITY_OFFSET) * (config.VELOCITY_RANGE // config.VELOCITY_BINS)
         elif evt >= config.TIME_OFFSET:
             # Shifting forward in time
-            tick_bin = evt - config.TIME_OFFSET
-            assert tick_bin >= 0 and tick_bin < config.TIME_BINS
-            seconds = config.TICK_BINS[tick_bin] / config.TICKS_PER_SEC
-            self.delta_time += int(mido.second2tick(seconds, self.midi_file.ticks_per_beat, self.tempo))
+            time_bin = evt - config.TIME_OFFSET
+            assert time_bin >= 0 and time_bin < config.NUM_TIME_BINS
+            seconds = config.TIME_BINS[time_bin] / config.TICKS_PER_SEC
+            self.delta_time += int(mido.second2tick(seconds, self.midi.ticks_per_beat, self.tempo))
         elif evt >= 0:
             # Turning a note on (or off if velocity = 0)
             note = evt
             # We can turn a note on twice, indicating a replay
-            if self.last_velocity == 0:
+            if self.prev_velocity == 0:
                 # Note off
                 if note in self.on_notes:
                     # We cannot turn a note off when it was never on
@@ -46,107 +48,116 @@ class TrackBuilder():
                     self.on_notes.remove(note)
                     self.delta_time = 0
             else:
-                self.track.append(mido.Message('note_on', note=note, time=self.delta_time, velocity=self.last_velocity))
+                self.track.append(mido.Message('note_on', note=note, time=self.delta_time, velocity=self.prev_velocity))
                 self.on_notes.add(note)
                 self.delta_time = 0
         
     def reset(self):
-        self.midi_file = mido.MidiFile()
+        self.midi = mido.MidiFile()
         self.track = mido.MidiTrack()
         self.track.append(mido.MetaMessage('set_tempo', tempo=self.track_tempo))
         # Tracks on notes
         self.on_notes = set()
     
-    def run(self):
+    def export(self):
         for _ in self:
             pass
-    
-    def export(self):
-        """
-        Export buffer track to MIDI file
-        """
-        self.midi_file.tracks.append(self.track)
-        return_file = self.midi_file
+        self.midi.tracks.append(self.track)
+        midi_out = self.midi
         self.reset()
-        return return_file
+        return midi_out
 
-def seq_to_midi(event_seq):
-    """
-    Takes an event sequence and encodes it into MIDI file
-    """
-    track_builder = TrackBuilder(iter(event_seq))
-    track_builder.run()
-    return track_builder.export()
 
-def midi_to_seq(midi_file, track):
-    """
-    Converts a MIDO track object into an event sequence
-    """
+"""
+Returns an event sequence representation of the MIDI file associated with the passed path
+"""
+def load_midi(filename):
+
+    cached_midi = os.path.join(config.CACHE_DIR, filename + '.npy')
+
+    if os.path.isfile(cached_midi):
+        event_seq = np.load(cached_midi)
+    
+    else:
+        midi = mido.MidiFile(filename)
+        event_seq = rep_from_midi(tpb, mido.merge_tracks(midi.tracks))
+
+        # Cache the event sequence to avoid having to wait next time
+        os.makedirs(os.path.dirname(cached_midi), exist_ok=True)
+        np.save(cached_midi, event_seq)
+    
+    return event_seq
+
+
+"""
+Saves the passed event sequence representation as a MIDI file with name filename
+"""
+def save_midi(filename, event_seq):
+
+    os.makedirs(config.COMPOSITIONS_DIR, exist_ok=True)
+    midi = TrackBuilder(iter(event_seq)).export()
+    midi.save(config.COMPOSITIONS_DIR + '/' + filename + '.mid')
+
+
+"""
+Convert from MIDI to the representation defined in the report
+"""
+def rep_from_midi(tpb, track):
+
     events = []
     tempo = 120
-    last_velocity = None
+    prev_velocity = None
     
-    for msg in track:
-        event_type = msg.type
+    for event in track:
         
-        # Parse delta time
-        if msg.time != 0:
-            seconds = mido.tick2second(msg.time, midi_file.ticks_per_beat, tempo)
-            events += list(seconds_to_events(seconds))
+        # Check meta event type to see if tempo can be set, else ignore
+        if event.is_meta:
+            if event.type == 'set_tempo':
+                tempo = event.tempo
 
-        # Ignore meta messages
-        if msg.is_meta:
-            if msg.type == 'set_tempo':
-                # Handle tempo setting
-                tempo = msg.tempo
+        # Calculate time events to append according to the time that has passed since the previous event
+        if event.time != 0:
+            events += list(bin_time_to_events(mido.tick2second(event.time, tpb, tempo)))
+
+        # Ignore events that do not pertain to a note being played / released
+        if event.type != 'note_on' and event.type != 'note_off':
             continue
 
-        # Ignore control changes
-        if event_type != 'note_on' and event_type != 'note_off':
-            continue
-
-        if event_type == 'note_on':
-            velocity = (msg.velocity) // (config.MIDI_VELOCITY // config.VELOCITY_BINS)
-        elif event_type == 'note_off':
+        # Quantise velocity of notes
+        if event.type == 'note_on':
+            velocity = event.velocity // (config.VELOCITY_RANGE // config.VELOCITY_BINS)
+        else:
             velocity = 0
         
-        # If velocity is different, we update it
-        if last_velocity != velocity:
+        if prev_velocity != velocity:
             events.append(config.VELOCITY_OFFSET + velocity)
-            last_velocity = velocity
+            prev_velocity = velocity
 
-        events.append(msg.note)
+        events.append(event.note)
 
     return np.array(events)
 
-def load_midi(filename):
-    cache_path = os.path.join(config.CACHE_DIR, filename + '.npy')
-    try:
-        seq = np.load(cache_path)
-    except Exception as e:
-        # Load
-        mid = mido.MidiFile(filename)
-        track = mido.merge_tracks(mid.tracks)
-        seq = midi_to_seq(mid, track)
-        # Perform caching
-        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-        np.save(cache_path, seq)
-    return seq
 
-def save_midi(filename, event_seq):
-    """
-    Takes a list of all notes generated per track and writes it to file
-    """
-    os.makedirs(config.SAMPLES_DIR, exist_ok=True)
-    fpath = config.SAMPLES_DIR + '/' + filename + '.mid'
-    midi_file = seq_to_midi(event_seq)
-    print('Writing file', fpath)
-    midi_file.save(fpath)
-    
-def save_midi_file(file, event_seq):
-    """
-    Takes a list of all notes generated per track and writes it to file
-    """
-    os.makedirs(config.SAMPLES_DIR, exist_ok=True)
-    midi_file = seq_to_midi(event_seq)
-    midi_file.save(file=file)
+"""
+Applies binning to the passed length of time, returning multiple events if maximum bin size is reached, seconds are converted to events
+"""
+def bin_time_to_events(seconds):
+
+    ticks = round(seconds * config.TICKS_PER_SEC)
+
+    while ticks > 0:
+
+        # Use current number of ticks to find largest possible bin
+        for i, bin_ticks in enumerate(config.TIME_BINS):
+            if ticks >= bin_ticks:
+                time_bin = i
+
+        # Calculate remaining ticks for next iteration
+        ticks -= config.TIME_BINS[time_bin]
+        
+        # Yield a time event to append to the sequence corresponding to the calculated bin
+        yield config.TIME_OFFSET + time_bin
+
+        # Break if less ticks than the biggest bin remain, this is to avoid excessive event creation
+        if ticks < config.TIME_BINS[-1]:
+            break

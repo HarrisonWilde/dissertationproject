@@ -1,120 +1,104 @@
 import numpy as np
-
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
+from torch.nn import Module, Linear, RNN, LSTM, GRU
+from torch.nn.functional import softmax
 
 import config
-from util import *
 
+"""
+Relativistic dilated LSTM or GRU network architecture as defined in the final report, can be given different unit and layer arguments on creation
+"""
+class Model(Module):
 
-class WildeNet(nn.Module):
-    """
-    The WildeNet architecture.
-    """
-    def __init__(self, num_units=768, num_layers=4, mood_units=64):
+    def __init__(self, units=768, layers=4, mood_units=64, recurrent_unit='LSTM'):
+        
         super().__init__()
-        self.num_units = num_units
-        self.num_layers = num_layers
+
+        self.units = units
+        self.layers = layers
         self.mood_units = mood_units
+        self.dilations = [2 ** i for i in range(self.layers)]
 
-        # RNN
-        self.rnns = [
-            nn.LSTM(config.FULL_RANGE + mood_units, self.num_units, batch_first=True) if i == 0 else
-            DilatedRNN(nn.LSTM(self.num_units, self.num_units, batch_first=True), 2 ** i)
-            for i in range(self.num_layers)
-        ]
+        self.mood_layer = Linear(config.MOOD_DIMENSION, self.mood_units)
 
-        self.output_linear = nn.Linear(self.num_units, config.FULL_RANGE)
+        if recurrent_unit == 'LSTM':
+            RU = LSTM
+        elif recurrent_unit == 'GRU':
+            RU = GRU
+        else:
+            raise NotImplementedError
 
-        for i, rnn in enumerate(self.rnns):
-            self.add_module('dlstm' + str(i), rnn)
+        first_hidden_layer = [RU(config.FULL_RANGE + self.mood_units, self.units, batch_first=True)]
+        dilated_hidden_layers = [RU(self.units, self.units, batch_first=True) for i in range(1, self.layers)]
+        self.hidden_layers = first_hidden_layer + dilated_hidden_layers
+        
+        for i, hidden_layer in enumerate(self.hidden_layers):
+            self.add_module('D' + recurrent_unit + str(i), hidden_layer)     
 
-        # Mood 192 output, 6 corresponds to the number of mood params
-        self.mood_linear = nn.Linear(6, self.mood_units)
-        # self.mood_layer = nn.Linear(self.mood_units, self.num_units * self.num_layers)
+        self.output_layer = Linear(self.units, config.FULL_RANGE)
 
-    def forward(self, x, mood, states=None):
-        batch_size = x.size(0)
-        seq_len = x.size(1)
+    """
+    Forward step for the network inputting passed tensors of inputs and moods
+    """
+    def forward(self, inputs, moods, states=None):
+        
+        batch_size, sequence_length, _ = inputs.size()
 
         # Distributed mood representation
-        mood = self.mood_linear(mood)
-        # mood = F.tanh(self.mood_layer(mood))
-        mood = mood.unsqueeze(1).expand(batch_size, seq_len, self.mood_units)
-        x = torch.cat((x, mood), dim=2)
+        moods = self.mood_layer(moods)
+        moods = moods.unsqueeze(1).expand(batch_size, sequence_length, self.mood_units)
+        inputs = torch.cat((inputs, moods), dim=2)
 
-        ## Process RNN ##
         if states is None:
-            states = [None for _ in range(self.num_layers)]
+            states = [None] * self.layers
 
-        for l, rnn in enumerate(self.rnns):
-            prev_x = x
-            x, states[l] = rnn(x, states[l])
+        for i, hidden_layer in enumerate(self.hidden_layers):
+            
+            prev_inputs = inputs
+            dilation = self.dilations[i]
 
-            if l > 0:
-                x = prev_x + x
+            # Usually during generation
+            if sequence_length == 1:
 
-        x = self.output_linear(x)
-        return x, states
+                if states[i] is None:
+                    states[i] = (0, tuple(None for _ in range(dilation)))
 
-    def generate(self, x, mood, states, temperature=1):
-        """ Returns the probability of outputs """
-        x, states = self.forward(x, mood, states)
-        seq_len = x.size(1)
-        x = x.view(-1, config.FULL_RANGE)
-        x = F.softmax(x / temperature, dim=1)
-        x = x.view(-1, seq_len, config.FULL_RANGE)
-        return x, states
+                step, dilated_states = states[i]
+                inputs, dilated_state = hidden_layer(inputs, dilated_states[step % dilation])
+                states[i] = (step + 1, dilated_states[:step % dilation] + (dilated_state,) + dilated_states[step % dilation + 1:])
 
+            else:
+                # Reshape to spread across dilated skip connections
+                inputs = (inputs
+                    .unfold(1, dilation, dilation)
+                    .permute(0, 3, 1, 2)
+                    .contiguous()
+                    .view(batch_size * dilation, sequence_length // dilation, -1))
+                
+                inputs, states[i] = hidden_layer(inputs, states[i])
 
-class DilatedRNN(nn.Module):
+                # inputs are now of dimension [batch_size * dilation, sequence_length // dilation, features], need to return it to its original shape
+                inputs = (inputs
+                    .contiguous()
+                    .view(batch_size, dilation, sequence_length // dilation, -1)
+                    .permute(0, 2, 1, 3)
+                    .contiguous()
+                    .view(batch_size, sequence_length, -1))
+
+            if i > 0:
+                inputs = prev_inputs + inputs
+
+        inputs = self.output_layer(inputs)
+        
+        return inputs, states
+
     """
-    DRNN Module, to wrap around a recurrent unit of some description and provide recurrent skip connections
-    https://arxiv.org/pdf/1710.02224.pdf
+    Returns a vector of probabilities to be used in generating new compositions based on previous states
     """
-    def __init__(self, wrap_rnn, dilation=1):
-        """
-        Args:
-            wrap_rnn: The RNN module to wrap.
-            dilation: The dilation factor
-        """
-        super().__init__()
-        assert wrap_rnn.batch_first
-        self.rnn = wrap_rnn
-        self.dilation = dilation
-    
-    def forward(self, x, states):
-        """
-        Args:
-            x: A sequence of features [batch, seq_len, features]
-        """
-        # The number of dilation = the number of parallelism that can be achieved.
-        # Move the additional parallels into batch dimension
-        batch_size = x.size(0)
-        seq_len = x.size(1)
-        if seq_len == 1:
-            # Single step requires us to store which step we are on.
-            if states is None:
-                # Each memory tensor corresponds to a dilation.
-                states = (0, tuple(None for _ in range(self.dilation)))
-            step, memories = states
-            memory_id = step % self.dilation
-            x, memory = self.rnn(x, memories[memory_id])
-            states = (step + 1, memories[:memory_id] + (memory,) + memories[memory_id + 1:])
-            return x, states
+    def compose(self, inputs, moods, states, temperature):
 
-        # Taking in a full sequence
-        assert seq_len % self.dilation == 0, seq_len
-        x = x.unfold(1, self.dilation, self.dilation)
-        x = x.permute(0, 3, 1, 2)
-        x = x.contiguous().view(batch_size * self.dilation, seq_len // self.dilation, -1)
-        x, states = self.rnn(x, states)
-        # X is now [batch * dilation, seq_len // dilation, features]
-        # We want to restore it back into [batch, seq_len, features]
-        # But we can't simply reshape it, because that messes up the order.
-        x = x.contiguous().view(batch_size, self.dilation, seq_len // self.dilation, -1)
-        x = x.permute(0, 2, 1, 3)
-        x = x.contiguous().view(batch_size, seq_len, -1)
-        return x, states
+        inputs, states = self.forward(inputs, moods, states)
+        inputs = softmax(inputs.view(-1, config.FULL_RANGE) / temperature, dim=1)
+        inputs = inputs.view(-1, inputs.size(1), config.FULL_RANGE)
+
+        return inputs, states
