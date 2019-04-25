@@ -1,71 +1,8 @@
-import math
 import mido
 import os
 import numpy as np
 
 import config
-
-
-"""
-Builds a track from an iterator of passed events
-"""
-class TrackBuilder():
-    def __init__(self, event_seq, tempo=mido.bpm2tempo(120)):
-        self.event_seq = event_seq
-        
-        self.prev_velocity = 0
-        self.delta_time = 0
-        self.tempo = mido.bpm2tempo(120)
-        self.track_tempo = tempo
-        
-        self.reset()
-    
-    def __iter__(self):
-        return self
-    
-    def __next__(self):
-        evt = next(self.event_seq).item()
-
-        # Interpret event data
-        if evt >= config.VELOCITY_OFFSET:
-            # A velocity change
-            self.prev_velocity = (evt - config.VELOCITY_OFFSET) * (config.VELOCITY_RANGE // config.VELOCITY_BINS)
-        elif evt >= config.TIME_OFFSET:
-            # Shifting forward in time
-            time_bin = evt - config.TIME_OFFSET
-            assert time_bin >= 0 and time_bin < config.NUM_TIME_BINS
-            seconds = config.TIME_BINS[time_bin] / config.TICKS_PER_SEC
-            self.delta_time += int(mido.second2tick(seconds, self.midi.ticks_per_beat, self.tempo))
-        elif evt >= 0:
-            # Turning a note on (or off if velocity = 0)
-            note = evt
-            # We can turn a note on twice, indicating a replay
-            if self.prev_velocity == 0:
-                # Note off
-                if note in self.on_notes:
-                    # We cannot turn a note off when it was never on
-                    self.track.append(mido.Message('note_off', note=note, time=self.delta_time))
-                    self.on_notes.remove(note)
-                    self.delta_time = 0
-            else:
-                self.track.append(mido.Message('note_on', note=note, time=self.delta_time, velocity=self.prev_velocity))
-                self.on_notes.add(note)
-                self.delta_time = 0
-        
-    def reset(self):
-        self.midi = mido.MidiFile()
-        self.track = mido.MidiTrack()
-        self.track.append(mido.MetaMessage('set_tempo', tempo=self.track_tempo))
-        # Tracks on notes
-        self.on_notes = set()
-    
-    def export(self):
-        for _ in self:
-            pass
-        self.midi.tracks.append(self.track)
-        midi_out = self.midi
-        self.reset()
-        return midi_out
 
 
 """
@@ -75,40 +12,32 @@ def load_midi(filename):
 
     cached_midi = os.path.join(config.CACHE_DIR, filename + '.npy')
 
-    if os.path.isfile(cached_midi):
-        event_seq = np.load(cached_midi)
+    try:
+        # Try to load cache from previous version
+        events = np.load(cached_midi)
     
-    else:
+    except:
+        # Load using mido and convert to representation
         midi = mido.MidiFile(filename)
-        event_seq = rep_from_midi(tpb, mido.merge_tracks(midi.tracks))
+        events = rep_from_midi(midi.ticks_per_beat, mido.merge_tracks(midi.tracks))
 
         # Cache the event sequence to avoid having to wait next time
         os.makedirs(os.path.dirname(cached_midi), exist_ok=True)
-        np.save(cached_midi, event_seq)
+        np.save(cached_midi, events)
     
-    return event_seq
-
-
-"""
-Saves the passed event sequence representation as a MIDI file with name filename
-"""
-def save_midi(filename, event_seq):
-
-    os.makedirs(config.COMPOSITIONS_DIR, exist_ok=True)
-    midi = TrackBuilder(iter(event_seq)).export()
-    midi.save(config.COMPOSITIONS_DIR + '/' + filename + '.mid')
+    return events
 
 
 """
 Convert from MIDI to the representation defined in the report
 """
-def rep_from_midi(tpb, track):
+def rep_from_midi(tpb, midi):
 
     events = []
     tempo = 120
     prev_velocity = None
     
-    for event in track:
+    for event in midi:
         
         # Check meta event type to see if tempo can be set, else ignore
         if event.is_meta:
@@ -130,6 +59,7 @@ def rep_from_midi(tpb, track):
             velocity = 0
         
         if prev_velocity != velocity:
+
             events.append(config.VELOCITY_OFFSET + velocity)
             prev_velocity = velocity
 
@@ -161,3 +91,59 @@ def bin_time_to_events(seconds):
         # Break if less ticks than the biggest bin remain, this is to avoid excessive event creation
         if ticks < config.TIME_BINS[-1]:
             break
+
+
+"""
+Saves the passed event sequence representation as a MIDI file with name filename
+"""
+def save_midi(filename, events):
+
+    os.makedirs(config.COMPOSITIONS_DIR, exist_ok=True)
+    midi = midi_from_rep(events)
+    midi.save(config.COMPOSITIONS_DIR + '/' + filename + '.mid')
+
+
+"""
+Builds a track from an iterator of passed events
+"""
+def midi_from_rep(events):
+        
+    prev_velocity = 0
+    time = 0
+    midi = mido.MidiFile()
+    track = mido.MidiTrack()
+    held_notes = set()        
+    
+    for event in events:
+
+        """
+        Use offsets to determine MIDI action to take for this event
+        """
+        if event >= config.VELOCITY_OFFSET:
+            
+            prev_velocity = (event - config.VELOCITY_OFFSET) * (config.VELOCITY_RANGE // config.VELOCITY_BINS)
+        
+        elif event >= config.TIME_OFFSET:
+
+            time_bin = event - config.TIME_OFFSET
+            seconds = config.TIME_BINS[time_bin] / config.TICKS_PER_SEC
+            time += int(mido.second2tick(seconds, midi.ticks_per_beat, mido.bpm2tempo(120)))
+        
+        else:
+
+            if prev_velocity == 0:
+
+                # Release a note if it is held
+                if event in held_notes:
+
+                    track.append(mido.Message('note_off', note=event, time=time))
+                    held_notes.remove(event)
+                    time = 0
+
+            else:
+
+                track.append(mido.Message('note_on', note=event, time=time, velocity=prev_velocity))
+                held_notes.add(event)
+                time = 0
+
+    return midi.tracks.append(track)

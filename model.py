@@ -5,6 +5,7 @@ from torch.nn.functional import softmax
 
 import config
 
+
 """
 Relativistic dilated LSTM or GRU network architecture as defined in the final report, can be given different unit and layer arguments on creation
 """
@@ -12,7 +13,7 @@ class Model(Module):
 
     def __init__(self, units=768, layers=4, mood_units=64, recurrent_unit='LSTM'):
         
-        super().__init__()
+        super(Model, self).__init__()
 
         self.units = units
         self.layers = layers

@@ -1,10 +1,8 @@
-import itertools
-import math
 import os
 import numpy as np
 import torch
-from tqdm import tqdm
 from datetime import datetime
+from tqdm import tqdm
 
 import config
 from conversion import load_midi
@@ -19,6 +17,7 @@ def load_data(split):
     mood_data = []
     midi_stats = 0
     mood_stats = [0, 0, 0, 0, 0, 0]
+    missing_mood_count = 0
     note_counts = [0] * 128
 
     for filename in tqdm(os.listdir(config.MIDI_DIR)):
@@ -34,7 +33,7 @@ def load_data(split):
                 except:
                     pass
 
-            if len(midi) >= config.SEQUENCE_LENGTH * 1.2:
+            if len(midi) >= config.SEQUENCE_LENGTH + 10:
                 midi_data.append(torch.from_numpy(midi).long())
                 midi_stats += len(midi)
             
@@ -44,6 +43,7 @@ def load_data(split):
 
             if filename.split()[0] in ('16384', '32768'):
                 filename = filename[6:]
+
             try:
                 mood = np.load(os.path.join(config.MOOD_DIR, os.path.splitext(filename)[0] + '.npy'), encoding='latin1').item()
                 mood_data.append(torch.FloatTensor([
@@ -61,10 +61,11 @@ def load_data(split):
                 mood_stats[4] += mood['arousal_mid_ratio']
                 mood_stats[5] += mood['arousal_intense_ratio']
             except:
-                print("no mood file found")
+                missing_mood_count += 1
                 mood_data.append(torch.FloatTensor([0,0,0,0,0,0]))
-        
-    print('Loaded {} MIDI files with an average of {} events per file.'.format(len(midi_data), midi_stats / len(midi_data)))
+    
+    print()
+    print('Loaded {} MIDI files with an average of {} events per file. There were {} missing mood files.'.format(len(midi_data), midi_stats / len(midi_data), missing_mood_count))
     print()
     print('Note counts: ' + str(note_counts))
     print()
@@ -125,7 +126,7 @@ def sampler(data, transpose):
         seq_id = np.random.randint(len(midi_data))
         midi = midi_data[seq_id]
         mood = mood_data[seq_id]
-        start_index = np.random.randint(len(midi) - int(sequence_length * 1.2))
+        start_index = np.random.randint(len(midi) - int(sequence_length + 5))
         midi = midi[start_index:start_index + sequence_length]
 
         if transpose:

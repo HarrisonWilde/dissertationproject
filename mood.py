@@ -3,7 +3,6 @@ Code based on the DeepSent project by Mu Chen as referenced in the final report 
 """
 import os
 import pickle
-import sys
 import numpy as np
 from pydub import AudioSegment
 from scipy.fftpack import fft, dct
@@ -99,8 +98,8 @@ def analyse(filename, name):
 		"valence_sad_ratio": valence_sad_ratio * 100.0,
 		"valence_neutral_ratio": valence_neutral_ratio * 100.0
 	}
-	# print(result_dict)
-	np.save(os.path.join(config.MOOD_DIR, name), result_dict)
+	print(result_dict)
+	# np.save(os.path.join(config.MOOD_DIR, name), result_dict)
 
 
 
