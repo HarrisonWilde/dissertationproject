@@ -891,7 +891,7 @@ highlighting Magenta as a tool of great promise.
 \hypertarget{project-management}{%
 \subsection{Project Management}\label{project-management}}
 
-In order to impose structure to the project's trajectory, meetings with
+In order to impose structure on the project's trajectory, meetings with
 the project's supervisor were organised roughly once per week. These
 meetings offered a chance for discussion of ideas and the receipt of
 advice in resolving some of the issues faced throughout the project.
@@ -1189,7 +1189,7 @@ training data that creating an original corpus presented. The MAESTRO
 dataset {[}\protect\hyperlink{ref-maestro2018}{19}{]} was used which is
 potentially the largest of its kind, providing 1,200 pieces spanning 170
 hours in \texttt{.wav} format alongside their ground truth MIDI files
-(the audio \emph{and} MIDI were recorded together using an electronic
+(the audio \textbf{and} MIDI were recorded together using an electronic
 piano and microphones, so no MIDI transcription took place like the
 processes described above, MAESTRO describes the ``perfect'' training
 set for this kind of model). The raw audio could be used to analyse mood
@@ -1476,7 +1476,8 @@ Where:
 
 In this case and all proceeding cases, where there are multiple hidden
 layers, assume that the input for the \(n^{\text{th}}\) layer
-\(h^{(n)}_t\) is \(x_t = h^{(n-1)}_t\).
+\(h^{(n)}_t\) is \(x_t = h^{(n-1)}_t\) and the formulation for \(y_t\)
+is respect to the \emph{last} hidden layer of the network.
 
 \begin{figure}
 \centering
@@ -1655,10 +1656,10 @@ configuration to the LSTM:
 \end{itemize}
 
 The candidate activation state \(h_t^*\) is calculated as
-\[h_t^* = \tanh(W_{ih^*} x_t + b_{ih^*} + r_t (W_{hh^*} h_{t-1} + b_{hh^*}))\]
+\[h_t^* = \tanh(W_{ih^*} x_t + b_{ih^*} + r_t \odot (W_{hh^*} h_{t-1} + b_{hh^*}))\]
 which can then be used in calculating the new / current activation via a
 linear interpolation of the candidate activation and the previous
-activation: \[h_t = h_{t-1} (1 - z_t) + h_t^* z_t\]
+activation: \[h_t = h_{t-1} \odot (1 - z_t) + h_t^* \odot z_t\]
 
 The diagram below illustrates the GRU and the flow of data through it
 diagrammatically.
@@ -1988,12 +1989,12 @@ the \(D_{\text{output}}\) classes and ``class'' corresponds to the
 Training was carried out with a 20:60:20 test:train:validation split
 applied to the MAESTRO and author-created ambient datasets with 250
 training batches per epoch and 75 validation batches (batch size was set
-to 32). Multiple optimisers were trialled after applying BPTT; Adam
+to 32). Multiple optimisers were trialled alongside applying BPTT; Adam
 {[}\protect\hyperlink{ref-kingma2014adam}{68}{]} was found to be the
-most succesful which is a recent and popular gradient descent algorithm.
-The models were then tested on the unseen test data; the resulting
-figures for each model's loss are included in the tables following this
-section.
+most successful which is a recent and popular gradient descent
+algorithm. The models were then tested on the unseen test data; the
+resulting figures for each model's loss are included in the tables
+following this section.
 
 The training curves for each configuration on the MAESTRO dataset are
 shown below:
@@ -2987,8 +2988,8 @@ Generation.'' \\
 \url{http://www.asimovinstitute.org/analyzing-deep-learning-tools-music/}.
 
 \leavevmode\hypertarget{ref-specification}{}%
-{[}42{]} H. Wilde, ``Composing soundscapes using machine learning and
-user input,'' \emph{Project Specification}..
+{[}42{]} H. Wilde, ``Composing soundscapes using neural networks and
+sentimental input,'' \emph{Project Specification}..
 
 \leavevmode\hypertarget{ref-warwickcomputenodes}{}%
 {[}43{]} \relax Warwick University, ``Compute Nodes.'' \\

@@ -166,7 +166,7 @@ The discourse provided by Magenta's blog and development path alongside that fou
 
 ## Project Management
 
-In order to impose structure to the project's trajectory, meetings with the project's supervisor were organised roughly once per week. These meetings offered a chance for discussion of ideas and the receipt of advice in resolving some of the issues faced throughout the project.
+In order to impose structure on the project's trajectory, meetings with the project's supervisor were organised roughly once per week. These meetings offered a chance for discussion of ideas and the receipt of advice in resolving some of the issues faced throughout the project.
 
 The specification and progress report documents (submitted previously) were built to be used as reference material moving forward; to instil a long-term awareness of the scale and eventual goals of the project. Initial research was key to determine these overall goals and this research manifested itself in these preliminary submissions. The report here is self-contained but still remains conscious of the initial specification of the project [@specification], as well as justifying changes and challenges that came up along the way.
 
@@ -229,7 +229,7 @@ It was found that decreasing `-c` from its default and increasing `-r` along wit
 
 WaoN and Magenta's "Onset Frames" model were used to convert a personal library of ambient music containing approximately 1,400 pieces spanning 180 hours into an author-created corpus of MIDI. This library's raw audio was also fed into the sentimental analysis part of the code to generate data on sentiment for each piece.
 
-The model was also trained on classical music to make it more comparable to existing offerings, and to reduce some of the issues regarding noisy training data that creating an original corpus presented. The MAESTRO dataset [@maestro2018] was used which is potentially the largest of its kind, providing 1,200 pieces spanning 170 hours in `.wav` format alongside their ground truth MIDI files (the audio *and* MIDI were recorded together using an electronic piano and microphones, so no MIDI transcription took place like the processes described above, MAESTRO describes the "perfect" training set for this kind of model). The raw audio could be used to analyse mood which could then be associated with the MIDI files as before.
+The model was also trained on classical music to make it more comparable to existing offerings, and to reduce some of the issues regarding noisy training data that creating an original corpus presented. The MAESTRO dataset [@maestro2018] was used which is potentially the largest of its kind, providing 1,200 pieces spanning 170 hours in `.wav` format alongside their ground truth MIDI files (the audio **and** MIDI were recorded together using an electronic piano and microphones, so no MIDI transcription took place like the processes described above, MAESTRO describes the "perfect" training set for this kind of model). The raw audio could be used to analyse mood which could then be associated with the MIDI files as before.
 
 For evaluation in context of previous work, the four datasets JSB Chorales, MuseData, Nottingham and Piano-Midi.de were also used as discussed previously. These datasets did not include raw audio meaning mood data was not able to be extracted from them; this was not an issue as in order to remain relevant the sentiment part of each model's architecture was effectively cut out when these datasets were used. This was done to ensure the loss function values were comparable to previous attempts which did not incorporate a mood representation.
 
@@ -331,7 +331,7 @@ Where:
 - $W_{xy}$ represents the weight parameters between layers $x$ and $y$, these weight parameters are learned using backpropagation through time (BPTT) [@werbos1990backpropagation].
 - $b_{xy}$ is the bias parameter between layers $x$ and $y$ also adjusted during training via BPTT or a similar algorithm.
 
-In this case and all proceeding cases, where there are multiple hidden layers, assume that the input for the $n^{\text{th}}$ layer $h^{(n)}_t$ is $x_t = h^{(n-1)}_t$.
+In this case and all proceeding cases, where there are multiple hidden layers, assume that the input for the $n^{\text{th}}$ layer $h^{(n)}_t$ is $x_t = h^{(n-1)}_t$ and the formulation for $y_t$ is respect to the *last* hidden layer of the network.
 
 ![Recurrent connections between the hidden layers of an RNN.](Images/rnn.png)
 
@@ -394,9 +394,9 @@ $$z_t = \sigma(W_{iz} x_t + b_{iz} + W_{hz} h_{t-1} + b_{hz})$$
 where the terms are self-explanatory; its values fall in $[0,1]$ and control the extent to which the unit's activation is updated.
 
 The candidate activation state $h_t^*$ is calculated as
-$$h_t^* = \tanh(W_{ih^*} x_t + b_{ih^*} + r_t (W_{hh^*} h_{t-1} + b_{hh^*}))$$
+$$h_t^* = \tanh(W_{ih^*} x_t + b_{ih^*} + r_t \odot (W_{hh^*} h_{t-1} + b_{hh^*}))$$
 which can then be used in calculating the new / current activation via a linear interpolation of the candidate activation and the previous activation:
-$$h_t = h_{t-1} (1 - z_t) + h_t^* z_t$$
+$$h_t = h_{t-1} \odot (1 - z_t) + h_t^* \odot z_t$$
 
 The diagram below illustrates the GRU and the flow of data through it diagrammatically.
 
@@ -483,7 +483,7 @@ $$
 \operatorname{loss}(x, \text {class})=-\log \left(\frac{\exp (x[\text{class}])}{\sum_{j} \exp (x[j])}\right)=-x[\text {class}]+\log \left(\sum_{j} \exp (x[j])\right)
 $$
 
-Training was carried out with a 20:60:20 test:train:validation split applied to the MAESTRO and author-created ambient datasets with 250 training batches per epoch and 75 validation batches (batch size was set to 32). Multiple optimisers were trialled after applying BPTT; Adam [@kingma2014adam] was found to be the most succesful which is a recent and popular gradient descent algorithm. The models were then tested on the unseen test data; the resulting figures for each model's loss are included in the tables following this section.
+Training was carried out with a 20:60:20 test:train:validation split applied to the MAESTRO and author-created ambient datasets with 250 training batches per epoch and 75 validation batches (batch size was set to 32). Multiple optimisers were trialled alongside applying BPTT; Adam [@kingma2014adam] was found to be the most successful which is a recent and popular gradient descent algorithm. The models were then tested on the unseen test data; the resulting figures for each model's loss are included in the tables following this section.
 
 The training curves for each configuration on the MAESTRO dataset are shown below:
 
