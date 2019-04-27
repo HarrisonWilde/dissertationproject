@@ -67,15 +67,13 @@ def bin_time_to_events(seconds):
     while ticks > 0:
 
         # Use current number of ticks to find largest possible bin
-        for i, bin_ticks in enumerate(config.TIME_BINS):
-            if ticks >= bin_ticks:
-                time_bin = i
+        time_bin = next((i for i, v in enumerate(config.TIME_BINS) if v > ticks), len(config.TIME_BINS)) - 1
 
         # Calculate remaining ticks for next iteration
         ticks -= config.TIME_BINS[time_bin]
         
         # Yield a time event to append to the sequence corresponding to the calculated bin
-        yield config.TIME_OFFSET + time_bin
+        yield (config.TIME_OFFSET + time_bin)
 
         # Break if less ticks than the biggest bin remain, this is to avoid excessive event creation
         if ticks < config.TIME_BINS[-1]:
@@ -107,9 +105,8 @@ def midi_from_rep(events):
     for event in events:
 
         event = event.item()
-        """
-        Use offsets to determine MIDI action to take for this event
-        """
+        
+        # Use offsets to determine MIDI action to take for this event
         if event >= config.VELOCITY_OFFSET:
             
             # Calculate velocity using the possible values it can take divided by the number of bins
@@ -124,16 +121,13 @@ def midi_from_rep(events):
         else:
 
             if velocity == 0:
-
                 # Release a note if it is held
                 if event in held_notes:
-
                     track.append(mido.Message('note_off', note=event, time=time))
                     held_notes.remove(event)
                     time = 0
 
             else:
-
                 track.append(mido.Message('note_on', note=event, time=time, velocity=velocity))
                 held_notes.add(event)
                 time = 0

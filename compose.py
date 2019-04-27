@@ -6,21 +6,21 @@ from operator import itemgetter
 from tqdm import trange
 
 import config
-
+from conversion import save_midi
 
 """
 Composes a piece using the passed inputs
 """
-def compose(model, name, mood, temperature=0.8, n_candidates=1, sequence_length=5000):
+def compose(model, name, mood_input, temperature=0.8, n_candidates=1, sequence_length=5000):
 
     avg_probabilities = 1
     candidates = [(1, (), None)]
-    mood = torch.FloatTensor(mood)
+    mood = torch.FloatTensor(mood_input)
     if torch.cuda.is_available():
         mood = mood.cuda()
     mood = mood.unsqueeze(0)
 
-    for _ in trange(sequence_length, desc='Generating ' + name + ' ' + str(mood), leave=False):
+    for _ in trange(sequence_length, desc=str(mood_input), leave=True):
 
         sum_probabilities = 0
         next_candidates = []
@@ -48,12 +48,12 @@ def compose(model, name, mood, temperature=0.8, n_candidates=1, sequence_length=
 
     # Return the most probable sequence of events of all candidates
     chosen_events = np.array(max(candidates, key=itemgetter(0))[1])
-    save_midi(name + ' ' + str(mood), chosen_events)
+    save_midi(name + '/' + str(mood_input), chosen_events)
 
 
 
 """
-Creates variable of correct dimension containing the previous event
+Creates tensors of correct dimension containing the previous event
 """
 def extract_previous_event(events):
 

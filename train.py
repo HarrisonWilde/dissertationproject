@@ -30,7 +30,9 @@ def train(model, training_batch_generator, validation_batch_generator, optimiser
         training_losses = []
         validation_losses = []
 
-    session_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    session_date = datetime.now().strftime("%m-%d-%Y %H:%M")
+    os.makedirs(config.MODELS_DIR + '/' + session_date, exist_ok=True)
+    os.makedirs(config.GRAPHS_DIR + '/' + session_date, exist_ok=True)
 
     for epoch in range(n_epochs):
         
@@ -51,15 +53,14 @@ def training_epoch(model, training_batch_generator, optimiser, criterion, epoch)
 
     loss_sum = 0
     p = trange(config.TRAINING_STEPS, desc='T' + str(epoch))
-    for _ in p:
+    for i in p:
 
         model.train()
         midi, moods = training_batch_generator()
-        print(midi.size())
 
         loss = input_batch(model, midi, moods, criterion)
         loss_sum += loss.data.item()
-        p.set_postfix(loss=loss.data.item())
+        p.set_postfix(loss=loss_sum / (i + 1))
         loss *= (midi.size(1) - 1)
 
         # Zero the model's gradients
@@ -75,16 +76,16 @@ def training_epoch(model, training_batch_generator, optimiser, criterion, epoch)
 
         # Unscale the gradient
         for previous_parameter in previous_parameters:
-            previous_parameter.grad.data /= config.SCALE_FACTOR
+            previous_parameter.grad.data /= (midi.size(1) - 1)
 
         # clip_grad_norm_ mitigates exploding gradients in RNNs as discussed in the final report
-        clip_grad_norm_(model.parameters(), config.CLIP_FACTOR)
+        clip_grad_norm_(model.parameters(), 10)
         optimiser.step()
 
         # Copy the parameters back into the model
         model_params = list(model.parameters())
-        for i in range(len(previous_parameters)):
-            model_params[i].data.copy_(previous_parameters[i].data)
+        for j in range(len(previous_parameters)):
+            model_params[j].data.copy_(previous_parameters[j].data)
 
     return loss_sum / config.TRAINING_STEPS
 
@@ -95,13 +96,13 @@ def validation_epoch(model, validation_batch_generator, criterion, epoch):
 
     p = trange(config.VALIDATION_STEPS, desc='V' + str(epoch))
     loss_sum = 0
-    for _ in p:
+    for i in p:
     
         model.eval()
         midi, moods = validation_batch_generator()
         loss = input_batch(model, midi, moods, criterion, validating=True)
         loss_sum += loss.data.item()
-        p.set_postfix(loss=loss.data.item())
+        p.set_postfix(loss=loss_sum / (i + 1))
 
     return loss_sum / config.VALIDATION_STEPS
 
@@ -126,13 +127,17 @@ def input_batch(model, midi, moods, criterion, validating=False):
     if validating:
         with torch.no_grad():
             outputs, _ = model(inputs, moods, None)
-            loss = criterion(outputs.view(-1, config.FULL_RANGE).float(), targets.contiguous().view(-1))
+            loss = criterion(
+                outputs.view(-1, config.FULL_RANGE).float(), 
+                targets.contiguous().view(-1))
     else:
         outputs, _ = model(inputs, moods, None)
         # print(outputs.view(-1, config.FULL_RANGE).float()[0][targets.contiguous().view(-1)[0]])
         # print(outputs.view(-1, config.FULL_RANGE).float())
         # print(targets.contiguous().view(-1))
-        loss = criterion(outputs.view(-1, config.FULL_RANGE).float(), targets.contiguous().view(-1))
+        loss = criterion(
+            outputs.view(-1, config.FULL_RANGE).float(), 
+            targets.contiguous().view(-1))
 
     return loss
 
@@ -142,8 +147,8 @@ Saves arrays of loss values and plots a graph each n_epochs of these values
 """
 def save_progress(training_losses, validation_losses, name):
 
-    np.save('training_losses.npy', np.array(training_losses))
-    np.save('validation_losses.npy', np.array(validation_losses))
+    np.save('output/training_losses.npy', np.array(training_losses))
+    np.save('output/validation_losses.npy', np.array(validation_losses))
     plt.clf()
     plt.plot(training_losses)
     plt.plot(validation_losses)

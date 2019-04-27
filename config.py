@@ -23,7 +23,7 @@ VELOCITY_BINS = 32
 NUM_TIME_BINS = 32
 
 # The number of ticks represented in each bin
-TIME_BINS = [int(1.14 ** i + i) for i in range(NUM_TIME_BINS)]
+TIME_BINS = [int(1.2 ** i + i) for i in range(NUM_TIME_BINS)]
 TICKS_PER_SEC = 100
 
 
@@ -39,6 +39,5 @@ MOOD_DIMENSION = 6
 """
 Model training parameters
 """
-CLIP_FACTOR = 10
 TRAINING_STEPS = 250
 VALIDATION_STEPS = 75

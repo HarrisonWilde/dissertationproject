@@ -93,8 +93,8 @@ def load_data(split, sequence_length):
     validation_midi = [midi_data[i] for i in val_indices]
     validation_mood = [mood_data[i] for i in val_indices]
 
-    print('Training Sequences:', len(training_midi), len(training_mood))
-    print('Validation Sequences:', len(validation_midi), len(validation_mood))
+    print('Training Sequences:', len(training_midi))
+    print('Validation Sequences:', len(validation_midi))
 
 
     return (training_midi, training_mood), (validation_midi, validation_mood)
@@ -103,24 +103,24 @@ def load_data(split, sequence_length):
 """
 Creates batches of dimension [batch_size x sequence_length x D_input].
 """
-def batch_generator(sampler, batch_size, sequence_length):
+def batch_generator(sequence_generator, batch_size, sequence_length):
 
-    def batch():
+    def batch_gen():
 
-        batch = [sampler(sequence_length + 1) for i in range(batch_size)]
+        batch = [sequence_generator(sequence_length + 1) for i in range(batch_size)]
         return [torch.stack(x) for x in zip(*batch)]
 
-    return batch 
+    return batch_gen 
 
 
 """
-Generates sampled sequence of MIDI data for training.
+Generates sequences of MIDI data for training.
 """
-def sampler(data, transpose):
+def sequence_generator(data, transpose):
 
     midi_data, mood_data = data
 
-    def sample(sequence_length):
+    def sequence_gen(sequence_length):
 
         # Pick a random midi sequence from the data (alongside the corresponding mood) and a random starting index within that sequence to subset into something of length sequence_length
         seq_id = np.random.randint(len(midi_data))
@@ -134,7 +134,7 @@ def sampler(data, transpose):
 
         return midi, mood
 
-    return sample
+    return sequence_gen
 
 
 """

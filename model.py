@@ -53,20 +53,19 @@ class Model(Module):
         if states is None:
             states = [None] * self.layers
 
-        for i, hidden_layer in enumerate(self.hidden_layers):
+        for hidden_layer, dilation, state in zip(self.hidden_layers, self.dilations, self.states):
             
             prev_inputs = inputs
-            dilation = self.dilations[i]
 
             # Usually during generation
             if sequence_length == 1:
 
-                if states[i] is None:
-                    states[i] = (0, tuple(None for _ in range(dilation)))
+                if state is None:
+                    state = (0, tuple(None for _ in range(dilation)))
 
-                step, dilated_states = states[i]
+                step, dilated_states = state
                 inputs, dilated_state = hidden_layer(inputs, dilated_states[step % dilation])
-                states[i] = (step + 1, dilated_states[:step % dilation] + (dilated_state,) + dilated_states[step % dilation + 1:])
+                state = (step + 1, dilated_states[:step % dilation] + (dilated_state,) + dilated_states[step % dilation + 1:])
 
             else:
                 # Reshape to spread across dilated skip connections
@@ -76,9 +75,9 @@ class Model(Module):
                     .contiguous()
                     .view(batch_size * dilation, sequence_length // dilation, -1))
                 
-                inputs, states[i] = hidden_layer(inputs, states[i])
+                inputs, state = hidden_layer(inputs, state)
 
-                # inputs are now of dimension [batch_size * dilation, sequence_length // dilation, features], need to return it to its original shape
+                # inputs are wrong dimension, need to return them to their original shape
                 inputs = (inputs
                     .contiguous()
                     .view(batch_size, dilation, sequence_length // dilation, -1)
@@ -100,7 +99,7 @@ class Model(Module):
 
         inputs, states = self.forward(inputs, moods, states)
         length = inputs.size(1)
-        inputs = softmax(inputs.view(-1, config.FULL_RANGE) / temperature, dim=1)
-        inputs = inputs.view(-1, length, config.FULL_RANGE)
+        outputs = softmax(inputs.view(-1, config.FULL_RANGE) / temperature, dim=1)
+        outputs = outputs.view(-1, length, config.FULL_RANGE)
 
-        return inputs, states
+        return outputs, states

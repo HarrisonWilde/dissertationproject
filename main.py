@@ -32,13 +32,14 @@ parser.add_argument('-t', '--transpose', default=True, action='store_true', help
 parser.add_argument('-o', '--optimiser', default='Adam', type=str, help='Optimiser to use, choose from any torch.optim optimisers.')
 parser.add_argument('-lr', '--learning-rate', default=1e-3, type=float, help='Learning rate during training.')
 parser.add_argument('-g', '--generate', default=False, action='store_true', help='Flag to enable generation with an existing model rather than the training of a new / existing model.')
-parser.add_argument('-n', '--name', default='output ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S"), help='Name of the output composition file(s).')
+parser.add_argument('-n', '--name', default= datetime.now().strftime("%m-%d-%Y %H:%M"), help='Name of the output composition file(s).')
 parser.add_argument('-mi', '--mood-input', default=None, type=int, nargs='+', help='Specify the mood characteristics to aim for, default will generate one piece for each possible mood input.')
 parser.add_argument('-ol', '--length', default=5000, type=int, help='Length of generated piece(s).')
 parser.add_argument('-te', '--temperature', default=0.8, type=float, help='Set the generation temperature value, default is 0.8.')
 parser.add_argument('-c', '--n-candidates', default=1, type=int, help='Set the number of candidates to consider during generation steps, default is 1.')
 args = parser.parse_args()
 
+print()
 print('Loading Model...')
 print()
 model = Model(args.layers, args.recurrent_unit, args.units, args.mood_units)
@@ -79,9 +80,8 @@ if args.generate:
     print()
     print('Composing piece(s)...')
 
-    for i in tqdm(moods):
-
-        composition = compose(model, args.name, moods[i], args.temperature, args.n_candidates, args.length)
+    for mood in tqdm(moods):
+        composition = compose(model, args.name, mood, args.temperature, args.n_candidates, args.length)
 
 else:
     
@@ -104,8 +104,8 @@ else:
     print('Loading data...')
     training_data, validation_data = load_data(args.split, args.sequence_length)
     
-    training_batch_generator = batch_generator(sampler(training_data, args.transpose), args.batch_size, args.sequence_length)
-    validation_batch_generator = batch_generator(sampler(validation_data, args.transpose), args.batch_size, args.sequence_length)
+    training_batch_generator = batch_generator(sequence_generator(training_data, args.transpose), args.batch_size, args.sequence_length)
+    validation_batch_generator = batch_generator(sequence_generator(validation_data, args.transpose), args.batch_size, args.sequence_length)
     
     print()
     print('Training...')
