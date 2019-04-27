@@ -2,7 +2,6 @@
 Directories
 """
 AUDIO_DIR = '../Audio2.nosync'
-CACHE_DIR = 'output/cache'
 COMPOSITIONS_DIR = 'output/compositions'
 GRAPHS_DIR = 'output/graphs'
 MODELS_DIR = 'output/models'
@@ -40,10 +39,6 @@ MOOD_DIMENSION = 6
 """
 Model training parameters
 """
-SEQUENCE_LENGTH = 769
 CLIP_FACTOR = 10
-SCALE_FACTOR = 768
-
-# The number of training and validation steps per epoch
 TRAINING_STEPS = 250
 VALIDATION_STEPS = 75

@@ -9,21 +9,10 @@ import config
 Returns an event sequence representation of the MIDI file associated with the passed path
 """
 def load_midi(filename):
-
-    cached_midi = os.path.join(config.CACHE_DIR, filename + '.npy')
-
-    try:
-        # Try to load cache from previous version
-        events = np.load(cached_midi)
     
-    except:
-        # Load using mido and convert to representation
-        midi = mido.MidiFile(filename)
-        events = rep_from_midi(midi.ticks_per_beat, mido.merge_tracks(midi.tracks))
-
-        # Cache the event sequence to avoid having to wait next time
-        os.makedirs(os.path.dirname(cached_midi), exist_ok=True)
-        np.save(cached_midi, events)
+    # Load using mido and convert to representation
+    midi = mido.MidiFile(filename)
+    events = rep_from_midi(midi.ticks_per_beat, mido.merge_tracks(midi.tracks))
     
     return events
 
@@ -108,30 +97,33 @@ Builds a track from an iterator of passed events
 """
 def midi_from_rep(events):
         
-    prev_velocity = 0
+    velocity = 0
     time = 0
     midi = mido.MidiFile()
     track = mido.MidiTrack()
+    midi.tracks.append(track)
     held_notes = set()        
     
     for event in events:
 
+        event = event.item()
         """
         Use offsets to determine MIDI action to take for this event
         """
         if event >= config.VELOCITY_OFFSET:
             
-            prev_velocity = (event - config.VELOCITY_OFFSET) * (config.VELOCITY_RANGE // config.VELOCITY_BINS)
+            # Calculate velocity using the possible values it can take divided by the number of bins
+            velocity = (event - config.VELOCITY_OFFSET) * (config.VELOCITY_RANGE // config.VELOCITY_BINS)
         
         elif event >= config.TIME_OFFSET:
 
-            time_bin = event - config.TIME_OFFSET
-            seconds = config.TIME_BINS[time_bin] / config.TICKS_PER_SEC
+            # Calculate number of seconds to append using the TIME_BINS
+            seconds = config.TIME_BINS[event - config.TIME_OFFSET] / config.TICKS_PER_SEC
             time += int(mido.second2tick(seconds, midi.ticks_per_beat, mido.bpm2tempo(120)))
         
         else:
 
-            if prev_velocity == 0:
+            if velocity == 0:
 
                 # Release a note if it is held
                 if event in held_notes:
@@ -142,8 +134,8 @@ def midi_from_rep(events):
 
             else:
 
-                track.append(mido.Message('note_on', note=event, time=time, velocity=prev_velocity))
+                track.append(mido.Message('note_on', note=event, time=time, velocity=velocity))
                 held_notes.add(event)
                 time = 0
 
-    return midi.tracks.append(track)
+    return midi

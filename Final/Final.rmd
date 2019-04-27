@@ -686,7 +686,7 @@ As was discussed in this project's specification; and subsequently checked in th
 
 ## Alternative Architectures
 
-Some other recent developments in the space of recurrent units could offer improvements to the current architecture; most of these were either tried and discarded or are still too theoretical to practically implement and optimise to make them a viable alternative to LSTMs etc. All of the ones mentioned here are deemed to be 'ones to watch' in the sense that with some further development they could compete with or even surpass all current models.
+Some other recent developments in the space of recurrent units could offer improvements to the current architecture; most of these were either tried and discarded or are still too theoretical to practically implement and optimise to make them a viable alternative to LSTMs etc. All of the ones mentioned here are deemed to be "ones to watch" in the sense that with some further development they could compete with or even surpass all current models.
 
 Statistical Recurrent Units [@oliva2017statistical] substitute the gates of GRUs and LSTMs with moving averages of a selection of recurrent statistics. They have already achieved promising results in the task of musical composition but were not found to be significantly better than LSTMs and GRUs on their own. As SRUs gain traction and become optimised they may become a viable alternative as it is provable through differential equations that they can effectively mitigate vanishing / exploding gradients and could potentially achieve similar results to other units with significantly simpler parameter sets.
 

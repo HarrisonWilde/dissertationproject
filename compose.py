@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from heapq import nlargest
-from torch.autograd import Variable
+from operator import itemgetter
 from tqdm import trange
 
 import config
@@ -11,16 +11,16 @@ import config
 """
 Composes a piece using the passed inputs
 """
-def compose(model, mood, temperature=0.8, n_candidates=1, sequence_length=5000):
+def compose(model, name, mood, temperature=0.8, n_candidates=1, sequence_length=5000):
 
     avg_probabilities = 1
     candidates = [(1, (), None)]
-    mood = Variable(torch.from_numpy(mood).float())
+    mood = torch.FloatTensor(mood)
     if torch.cuda.is_available():
         mood = mood.cuda()
     mood = mood.unsqueeze(0)
 
-    for _ in range(sequence_length):
+    for _ in trange(sequence_length, desc='Generating ' + name + ' ' + str(mood), leave=False):
 
         sum_probabilities = 0
         next_candidates = []
@@ -29,7 +29,7 @@ def compose(model, mood, temperature=0.8, n_candidates=1, sequence_length=5000):
         for prev_probabilities, events, states in candidates:
 
             # Get next probability outputs and state from the model using previous event
-            output, next_state = model.compose(extract_previous_event(events), mood, states, temperature)
+            output, next_states = model.compose(extract_previous_event(events), mood, states, temperature)
             output = output.squeeze(1)
 
             for _ in range(n_candidates):
@@ -43,10 +43,13 @@ def compose(model, mood, temperature=0.8, n_candidates=1, sequence_length=5000):
                 sum_probabilities += event_probabilities
 
         # Find the sequence(s) that have the highest associated probabilities
-        candidates = nlargest(n_candidates, next_candidates, key=lambda x: x[0])
+        candidates = nlargest(n_candidates, next_candidates, key=itemgetter(0))
         avg_probabilities = sum_probabilities / len(next_candidates)
 
-    return np.array(max(candidates, key=lambda x: x[0])[1])
+    # Return the most probable sequence of events of all candidates
+    chosen_events = np.array(max(candidates, key=itemgetter(0))[1])
+    save_midi(name + ' ' + str(mood), chosen_events)
+
 
 
 """
@@ -58,14 +61,14 @@ def extract_previous_event(events):
 
         previous_event = np.zeros(config.FULL_RANGE)
         previous_event[events[-1]] = 1
-        previous_event = Variable(torch.from_numpy(previous_event).float())
+        previous_event = torch.from_numpy(previous_event).float()
         if torch.cuda.is_available():
             previous_event = previous_event.cuda()
         previous_event = previous_event.unsqueeze(0)
 
     else:
 
-        previous_event = Variable(torch.zeros((1, config.FULL_RANGE)))
+        previous_event = torch.zeros((1, config.FULL_RANGE))
         if torch.cuda.is_available():
             previous_event = previous_event.cuda()
 

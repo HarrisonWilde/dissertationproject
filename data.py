@@ -11,13 +11,14 @@ from conversion import load_midi
 """
 Function to load all MIDI and mood data into lists and return to be used in training and validation, also calculates statistics about the training data
 """
-def load_data(split):
+def load_data(split, sequence_length):
 
     midi_data = []
     mood_data = []
     midi_stats = 0
     mood_stats = [0, 0, 0, 0, 0, 0]
     missing_mood_count = 0
+    missed_count = 0
     note_counts = [0] * 128
 
     for filename in tqdm(os.listdir(config.MIDI_DIR)):
@@ -27,25 +28,23 @@ def load_data(split):
             midi = load_midi(os.path.join(config.MIDI_DIR, filename))
 
             # Count occurrences of each note
-            for i in midi:
-                try:
-                    note_counts[i] += 1
-                except:
-                    pass
+            for event in midi:
+                if 0 <= event <= 127:
+                    note_counts[event] += 1
 
-            if len(midi) >= config.SEQUENCE_LENGTH + 10:
-                midi_data.append(torch.from_numpy(midi).long())
+            if len(midi) >= sequence_length + 10:
+                midi_data.append(torch.from_numpy(midi))
                 midi_stats += len(midi)
             
             else:
-                print('Ignoring {} because it is too short {}.'.format(filename, len(midi)))
-                pass
+                missed_count += 1
+                continue
 
             if filename.split()[0] in ('16384', '32768'):
                 filename = filename[6:]
 
             try:
-                mood = np.load(os.path.join(config.MOOD_DIR, os.path.splitext(filename)[0] + '.npy'), encoding='latin1').item()
+                mood = np.load(os.path.join(config.MOOD_DIR, os.path.splitext(filename)[0] + '.npy'), encoding='latin1', allow_pickle=True).item()
                 mood_data.append(torch.FloatTensor([
                     1 if mood['valence_sad_ratio'] >= 50 else 0, 
                     1 if mood['valence_neutral_ratio'] >= 50 else 0, 
@@ -65,7 +64,7 @@ def load_data(split):
                 mood_data.append(torch.FloatTensor([0,0,0,0,0,0]))
     
     print()
-    print('Loaded {} MIDI files with an average of {} events per file. There were {} missing mood files.'.format(len(midi_data), midi_stats / len(midi_data), missing_mood_count))
+    print('Loaded {} MIDI files with an average of {} events per file. Ignored {} files because they were too short. There were {} missing mood files.'.format(len(midi_data), midi_stats / len(midi_data), missed_count, missing_mood_count))
     print()
     print('Note counts: ' + str(note_counts))
     print()
@@ -77,6 +76,9 @@ def load_data(split):
     print('Arousal Mid Ratio: ' + str(mood_stats[4] / len(midi_data)))
     print('Arousal Intense Ratio: ' + str(mood_stats[5] / len(midi_data)))
     print()
+
+    if len(midi_data) == 0:
+        raise 'No training data loaded.'
 
     # Generate a random train:validation split of mood and midi_data data
     indices = np.arange(len(midi_data))
@@ -91,8 +93,9 @@ def load_data(split):
     validation_midi = [midi_data[i] for i in val_indices]
     validation_mood = [mood_data[i] for i in val_indices]
 
-    print('Training Sequences:', len(training_midi))
-    print('Validation Sequences:', len(validation_midi))
+    print('Training Sequences:', len(training_midi), len(training_mood))
+    print('Validation Sequences:', len(validation_midi), len(validation_mood))
+
 
     return (training_midi, training_mood), (validation_midi, validation_mood)
 
@@ -104,7 +107,7 @@ def batch_generator(sampler, batch_size, sequence_length):
 
     def batch():
 
-        batch = [sampler(sequence_length) for i in range(batch_size)]
+        batch = [sampler(sequence_length + 1) for i in range(batch_size)]
         return [torch.stack(x) for x in zip(*batch)]
 
     return batch 
@@ -117,12 +120,9 @@ def sampler(data, transpose):
 
     midi_data, mood_data = data
 
-    if len(midi_data) == 0:
-        raise 'Training dataset is empty!'
-
     def sample(sequence_length):
 
-        # Pick a random midi sequence from the data (with the corresponding mood) and a random starting index within that sequence to subset into something of length sequence_length
+        # Pick a random midi sequence from the data (alongside the corresponding mood) and a random starting index within that sequence to subset into something of length sequence_length
         seq_id = np.random.randint(len(midi_data))
         midi = midi_data[seq_id]
         mood = mood_data[seq_id]
@@ -132,7 +132,7 @@ def sampler(data, transpose):
         if transpose:
             midi = random_tranposition(midi)
 
-        return (midi, mood)
+        return midi, mood
 
     return sample
 
@@ -148,7 +148,7 @@ def random_tranposition(midi):
     # Perform transposition (ensure only notes are moved by the transposition amount, not velocities and times)
     for event in midi:
         if event < config.TIME_OFFSET:
-            if (event + transposition >= config.TIME_OFFSET) or (event + transposition < 0) or (transposition == 0):
+            if (transposition == 0) or (event + transposition >= config.TIME_OFFSET) or (event + transposition < 0):
                 return midi
             else:
                 transposed_midi.append(event + transposition)

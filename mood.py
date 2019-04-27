@@ -51,7 +51,7 @@ def analyse(filename, name):
 
 	if (last - first) / 11025.0 < 5.0:
 		# If the middle section is less than 5 seconds then the music is too short for analysis
-		raise Error("The music you uploaded is too short. A length of at least 10 seconds is required")
+		raise Error("The music you uploaded is too short. A length of at least 50/7 seconds is required")
 
 	mid_segment = wave_data_em[first:last]
 	num_frame = (len(mid_segment) - frame_length_i) // frame_step_i
@@ -100,7 +100,6 @@ def analyse(filename, name):
 	}
 	print(result_dict)
 	# np.save(os.path.join(config.MOOD_DIR, name), result_dict)
-
 
 
 """

@@ -11,7 +11,7 @@ Relativistic dilated LSTM or GRU network architecture as defined in the final re
 """
 class Model(Module):
 
-    def __init__(self, units=768, layers=4, mood_units=64, recurrent_unit='LSTM'):
+    def __init__(self, layers, recurrent_unit, units, mood_units):
         
         super(Model, self).__init__()
 
@@ -89,9 +89,9 @@ class Model(Module):
             if i > 0:
                 inputs = prev_inputs + inputs
 
-        inputs = self.output_layer(inputs)
+        outputs = self.output_layer(inputs)
         
-        return inputs, states
+        return outputs, states
 
     """
     Returns a vector of probabilities to be used in generating new compositions based on previous states
@@ -99,7 +99,8 @@ class Model(Module):
     def compose(self, inputs, moods, states, temperature):
 
         inputs, states = self.forward(inputs, moods, states)
+        length = inputs.size(1)
         inputs = softmax(inputs.view(-1, config.FULL_RANGE) / temperature, dim=1)
-        inputs = inputs.view(-1, inputs.size(1), config.FULL_RANGE)
+        inputs = inputs.view(-1, length, config.FULL_RANGE)
 
         return inputs, states
